@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTRAGOL - L3HO</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>ULTRAGOL</h1>
+                    <span class="company">L3HO</span>
+                </div>
+                <div class="nav-menu">
+                    <button class="nav-btn active" onclick="showSection('transmisiones')">
+                        <i class="fas fa-tv"></i> Transmisiones
+                    </button>
+                    <button class="nav-btn" onclick="showSection('subir')">
+                        <i class="fas fa-upload"></i> Subir Transmisión
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Nota de Aviso -->
+    <div class="warning-notice">
+        <div class="container">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p><strong>AVISO IMPORTANTE:</strong> En caso de que la aplicación principal de transmisiones ULTRAGOL falle, utiliza esta sección para subir y ver transmisiones de respaldo.</p>
+        </div>
+    </div>
+
+    <main>
+        <!-- Sección de Transmisiones -->
+        <section id="transmisiones" class="section active">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-broadcast-tower"></i> Transmisiones en Vivo</h2>
+                    <p>Encuentra las mejores transmisiones de fútbol aquí</p>
+                </div>
+                
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterStreams('all')">Todos</button>
+                    <button class="filter-btn" onclick="filterStreams('youtube')">YouTube</button>
+                    <button class="filter-btn" onclick="filterStreams('instagram')">Instagram</button>
+                    <button class="filter-btn" onclick="filterStreams('tiktok')">TikTok</button>
+                    <button class="filter-btn" onclick="filterStreams('facebook')">Facebook</button>
+                    <button class="filter-btn" onclick="filterStreams('twitch')">Twitch</button>
+                </div>
+
+                <div id="streams-container" class="streams-grid">
+                    <div class="no-streams">
+                        <i class="fas fa-futbol"></i>
+                        <p>No hay transmisiones disponibles en este momento</p>
+                        <p class="sub-text">¡Sé el primero en compartir una transmisión!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Subir Transmisión -->
+        <section id="subir" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-plus-circle"></i> Compartir Tu Transmisión</h2>
+                    <p>Comparte tu transmisión de fútbol con la comunidad</p>
+                </div>
+
+                <form id="stream-form" class="stream-form">
+                    <div class="form-group">
+                        <label for="equipos">
+                            <i class="fas fa-users"></i> Equipos que Juegan
+                        </label>
+                        <input type="text" id="equipos" name="equipos" placeholder="Ej: Real Madrid vs Barcelona" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="plataforma">
+                            <i class="fas fa-desktop"></i> Plataforma de Transmisión
+                        </label>
+                        <select id="plataforma" name="plataforma" required>
+                            <option value="">Selecciona una plataforma</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="instagram">Instagram Live</option>
+                            <option value="tiktok">TikTok Live</option>
+                            <option value="facebook">Facebook Live</option>
+                            <option value="twitch">Twitch</option>
+                            <option value="kick">Kick</option>
+                            <option value="otra">Otra plataforma</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="otra-plataforma-group" style="display: none;">
+                        <label for="otra-plataforma">
+                            <i class="fas fa-globe"></i> Especifica la Plataforma
+                        </label>
+                        <input type="text" id="otra-plataforma" name="otra-plataforma" placeholder="Nombre de la plataforma">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="link">
+                            <i class="fas fa-link"></i> Link de la Transmisión
+                        </label>
+                        <input type="url" id="link" name="link" placeholder="https://..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tiempo-partido">
+                            <i class="fas fa-clock"></i> Tiempo del Partido
+                        </label>
+                        <select id="tiempo-partido" name="tiempo-partido" required>
+                            <option value="">Selecciona el tiempo</option>
+                            <option value="primer-tiempo">Primer Tiempo</option>
+                            <option value="descanso">Descanso</option>
+                            <option value="segundo-tiempo">Segundo Tiempo</option>
+                            <option value="tiempo-extra">Tiempo Extra</option>
+                            <option value="penales">Penales</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="liga">
+                            <i class="fas fa-trophy"></i> Liga/Competición
+                        </label>
+                        <select id="liga" name="liga" required>
+                            <option value="">Selecciona una liga</option>
+                            <option value="liga-mx">Liga MX</option>
+                            <option value="champions">Champions League</option>
+                            <option value="europa">Europa League</option>
+                            <option value="laliga">La Liga</option>
+                            <option value="premier">Premier League</option>
+                            <option value="serie-a">Serie A</option>
+                            <option value="bundesliga">Bundesliga</option>
+                            <option value="copa-mx">Copa MX</option>
+                            <option value="seleccion">Selección Nacional</option>
+                            <option value="otra-liga">Otra Liga</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="otra-liga-group" style="display: none;">
+                        <label for="otra-liga">
+                            <i class="fas fa-futbol"></i> Especifica la Liga
+                        </label>
+                        <input type="text" id="otra-liga" name="otra-liga" placeholder="Nombre de la liga">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="calidad">
+                            <i class="fas fa-hd-video"></i> Calidad del Stream
+                        </label>
+                        <select id="calidad" name="calidad" required>
+                            <option value="">Selecciona la calidad</option>
+                            <option value="4k">4K Ultra HD</option>
+                            <option value="1080p">1080p Full HD</option>
+                            <option value="720p">720p HD</option>
+                            <option value="480p">480p SD</option>
+                            <option value="360p">360p</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="idioma">
+                            <i class="fas fa-language"></i> Idioma de la Transmisión
+                        </label>
+                        <select id="idioma" name="idioma" required>
+                            <option value="">Selecciona el idioma</option>
+                            <option value="español">Español</option>
+                            <option value="inglés">Inglés</option>
+                            <option value="portugués">Portugués</option>
+                            <option value="francés">Francés</option>
+                            <option value="italiano">Italiano</option>
+                            <option value="alemán">Alemán</option>
+                            <option value="otro">Otro idioma</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="comentarios" name="comentarios">
+                            <span class="checkmark"></span>
+                            <i class="fas fa-microphone"></i> Transmisión con comentarios
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-share"></i> Compartir Transmisión
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 ULTRAGOL - L3HO. Todos los derechos reservados.</p>
+            <p class="footer-note">Las transmisiones se eliminan automáticamente después de 1 hora.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts de Firebase -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
