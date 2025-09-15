@@ -1023,27 +1023,6 @@ function createSkeletonCards(count) {
     return skeletonHTML;
 }
 
-// Crear elemento "no streams"
-function createNoStreamsElement() {
-    const div = document.createElement('div');
-    div.className = 'no-streams modern-empty-state';
-    
-    const icon = document.createElement('i');
-    icon.className = 'fas fa-futbol bounce';
-    
-    const p1 = document.createElement('p');
-    p1.textContent = 'No hay transmisiones disponibles en este momento';
-    
-    const p2 = document.createElement('p');
-    p2.className = 'sub-text';
-    p2.textContent = '¡Sé el primero en compartir una transmisión!';
-    
-    div.appendChild(icon);
-    div.appendChild(p1);
-    div.appendChild(p2);
-    
-    return div;
-}
 
 // ======================== EVENT HANDLERS SEGUROS ========================
 
