@@ -1,4 +1,4 @@
-import { db } from './firebase-config.js';
+import { db, auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './firebase-config.js';
 import { 
     collection, 
     addDoc, 
@@ -15,10 +15,13 @@ import {
 // Variables globales
 let currentFilter = 'all';
 let streamsData = [];
+let myStreamsData = [];
 let searchQuery = '';
 let favorites = JSON.parse(localStorage.getItem('ultragol_favorites') || '[]');
 let isLoading = false;
 let animationSpeed = 300;
+let currentUser = null;
+let isAuthenticated = false;
 
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', function() {
@@ -26,6 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    // Configurar autenticación
+    setupAuthentication();
+    
     // Configurar eventos
     setupEventListeners();
     
@@ -92,6 +98,12 @@ async function handleFormSubmit(e) {
     e.preventDefault();
     
     const submitBtn = document.querySelector('.submit-btn');
+    // Verificar que el usuario esté autenticado
+    if (!currentUser) {
+        showNotification('Debes iniciar sesión para subir una transmisión', 'error');
+        return;
+    }
+    
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
     
@@ -109,7 +121,10 @@ async function handleFormSubmit(e) {
             idioma: formData.get('idioma'),
             comentarios: formData.get('comentarios') === 'on',
             timestamp: serverTimestamp(),
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            // Agregar información del usuario (requerido)
+            userId: currentUser.uid,
+            userName: currentUser.displayName || 'Usuario'
         };
         
         // Validar URL
@@ -552,6 +567,206 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
+// ======================== FUNCIONES DE AUTENTICACIÓN ========================
+
+// Configurar autenticación
+function setupAuthentication() {
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    // Event listeners para autenticación
+    loginBtn.addEventListener('click', handleLogin);
+    logoutBtn.addEventListener('click', handleLogout);
+    
+    // Monitorear cambios en el estado de autenticación
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            isAuthenticated = true;
+            showUserInfo(user);
+            loadMyStreams();
+        } else {
+            currentUser = null;
+            isAuthenticated = false;
+            hideUserInfo();
+        }
+        updateUIForAuthState();
+    });
+}
+
+// Manejar inicio de sesión
+async function handleLogin() {
+    try {
+        const result = await signInWithGoogle();
+        showNotification('¡Bienvenido! Has iniciado sesión exitosamente', 'success');
+    } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        showNotification('Error al iniciar sesión: ' + error.message, 'error');
+    }
+}
+
+// Manejar cierre de sesión
+async function handleLogout() {
+    try {
+        await signOutUser();
+        showNotification('Has cerrado sesión exitosamente', 'success');
+        showSection('transmisiones');
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+        showNotification('Error al cerrar sesión: ' + error.message, 'error');
+    }
+}
+
+// Mostrar información del usuario
+function showUserInfo(user) {
+    const userInfo = document.getElementById('user-info');
+    const loginBtn = document.getElementById('login-btn');
+    const userAvatar = document.getElementById('user-avatar');
+    const userName = document.getElementById('user-name');
+    const misStreamsBtn = document.querySelector('[data-section="mis-streams"]');
+    
+    userAvatar.src = user.photoURL || 'https://via.placeholder.com/40x40?text=U';
+    userName.textContent = user.displayName || user.email;
+    
+    userInfo.style.display = 'flex';
+    loginBtn.style.display = 'none';
+    misStreamsBtn.style.display = 'block';
+}
+
+// Ocultar información del usuario
+function hideUserInfo() {
+    const userInfo = document.getElementById('user-info');
+    const loginBtn = document.getElementById('login-btn');
+    const misStreamsBtn = document.querySelector('[data-section="mis-streams"]');
+    
+    userInfo.style.display = 'none';
+    loginBtn.style.display = 'block';
+    misStreamsBtn.style.display = 'none';
+}
+
+// Actualizar UI según estado de autenticación
+function updateUIForAuthState() {
+    const submitBtn = document.querySelector('.submit-btn');
+    const streamForm = document.getElementById('stream-form');
+    const authWarning = document.getElementById('auth-warning');
+    
+    if (isAuthenticated) {
+        submitBtn.disabled = false;
+        streamForm.style.opacity = '1';
+        if (authWarning) authWarning.style.display = 'none';
+    } else {
+        submitBtn.disabled = true;
+        streamForm.style.opacity = '0.6';
+        if (!authWarning) {
+            createAuthWarning();
+        } else {
+            authWarning.style.display = 'block';
+        }
+    }
+}
+
+// Crear aviso de autenticación
+function createAuthWarning() {
+    const warning = document.createElement('div');
+    warning.id = 'auth-warning';
+    warning.className = 'auth-warning modern-notification';
+    warning.innerHTML = `
+        <i class="fas fa-lock"></i>
+        <span>Debes iniciar sesión para subir transmisiones</span>
+    `;
+    
+    const form = document.getElementById('stream-form');
+    form.parentNode.insertBefore(warning, form);
+}
+
+// Cargar streams del usuario
+async function loadMyStreams() {
+    if (!currentUser) return;
+    
+    try {
+        const q = query(
+            collection(db, 'streams'),
+            where('userId', '==', currentUser.uid),
+            orderBy('timestamp', 'desc')
+        );
+        
+        onSnapshot(q, (querySnapshot) => {
+            myStreamsData = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                data.id = doc.id;
+                myStreamsData.push(data);
+            });
+            
+            displayMyStreams(myStreamsData);
+        }, (error) => {
+            console.error('Error al cargar mis streams:', error);
+        });
+        
+    } catch (error) {
+        console.error('Error al configurar listener de mis streams:', error);
+    }
+}
+
+// Mostrar mis streams
+function displayMyStreams(streams) {
+    const container = document.getElementById('my-streams-container');
+    container.innerHTML = '';
+    
+    if (streams.length === 0) {
+        const noStreamsDiv = createNoStreamsElement('mis-streams');
+        container.appendChild(noStreamsDiv);
+        return;
+    }
+    
+    streams.forEach((stream, index) => {
+        const card = createStreamCardWithDelete(stream);
+        card.style.animationDelay = `${index * 100}ms`;
+        card.classList.add('fade-in-up');
+        container.appendChild(card);
+        
+        if (stream.id) {
+            updateTimeRemaining(stream.id, stream.createdAt);
+        }
+    });
+}
+
+// Crear tarjeta de stream con opción de eliminar
+function createStreamCardWithDelete(stream) {
+    const card = createStreamCardSafe(stream);
+    
+    // Agregar botón de eliminar solo para streams del usuario
+    if (currentUser && stream.userId === currentUser.uid) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn modern-btn danger-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Eliminar';
+        deleteBtn.title = 'Eliminar esta transmisión';
+        
+        deleteBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (confirm('¿Estás seguro de que quieres eliminar esta transmisión?')) {
+                await deleteStream(stream.id);
+            }
+        });
+        
+        const actions = card.querySelector('.stream-actions');
+        actions.appendChild(deleteBtn);
+    }
+    
+    return card;
+}
+
+// Eliminar stream
+async function deleteStream(streamId) {
+    try {
+        await deleteDoc(doc(db, 'streams', streamId));
+        showNotification('Transmisión eliminada exitosamente', 'success');
+    } catch (error) {
+        console.error('Error al eliminar stream:', error);
+        showNotification('Error al eliminar la transmisión: ' + error.message, 'error');
+    }
+}
+
 // ======================== FUNCIONES DE UTILIDAD Y SEGURIDAD ========================
 
 // Sanitizar texto para prevenir XSS
@@ -575,6 +790,33 @@ function sanitizeAttribute(attr) {
 }
 
 // ======================== FUNCIONES DE FILTRADO Y BÚSQUEDA ========================
+
+// Crear elemento de "no hay streams" personalizado
+function createNoStreamsElement(section = 'general') {
+    const div = document.createElement('div');
+    div.className = 'no-streams modern-empty-state';
+    
+    const icon = document.createElement('i');
+    const title = document.createElement('p');
+    const subtitle = document.createElement('p');
+    subtitle.className = 'sub-text';
+    
+    if (section === 'mis-streams') {
+        icon.className = 'fas fa-broadcast-tower';
+        title.textContent = 'No has subido ninguna transmisión aún';
+        subtitle.textContent = '¡Comparte tu primera transmisión!';
+    } else {
+        icon.className = 'fas fa-futbol';
+        title.textContent = 'No hay transmisiones disponibles en este momento';
+        subtitle.textContent = '¡Sé el primero en compartir una transmisión!';
+    }
+    
+    div.appendChild(icon);
+    div.appendChild(title);
+    div.appendChild(subtitle);
+    
+    return div;
+}
 
 // Aplicar filtros combinados
 function applyFilters(streams) {

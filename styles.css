@@ -1028,3 +1028,241 @@ footer p {
     background: #ff4444;
     color: white;
 }
+
+/* ======================== ESTILOS DE AUTENTICACIÓN ======================== */
+
+/* Auth Section */
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Login Button */
+.login-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(66, 133, 244, 0.4);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* User Info */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideInDown 0.5s ease;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-orange);
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-white);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.logout-btn {
+    background: rgba(255, 107, 53, 0.2);
+    color: var(--accent-orange);
+    border: 1px solid var(--accent-orange);
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.logout-btn:hover {
+    background: var(--accent-orange);
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Delete Button */
+.delete-btn, .danger-btn {
+    background: linear-gradient(135deg, #ff4757, #ff3742);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.delete-btn:hover, .danger-btn:hover {
+    background: linear-gradient(135deg, #ff3742, #ff2f3a);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4);
+}
+
+.delete-btn:active, .danger-btn:active {
+    transform: translateY(0);
+}
+
+/* Enhanced Stream Cards */
+.stream-card.modern-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 1.5rem;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(15px);
+}
+
+.stream-card.modern-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: 20px 20px 0 0;
+}
+
+.stream-card.modern-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 107, 53, 0.3);
+}
+
+/* Enhanced Animations */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.bounce {
+    animation: bounce 0.5s;
+}
+
+/* Enhanced Notifications */
+.modern-notification {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modern-notification.success {
+    border-left: 4px solid var(--success-green);
+}
+
+.modern-notification.error {
+    border-left: 4px solid #ff4757;
+}
+
+/* Auth Warning */
+.auth-warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-left: 4px solid #ffc107;
+    color: #ffc107;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 500;
+}
+
+.auth-warning i {
+    font-size: 1.2rem;
+}
+
+/* Mobile Responsiveness for Auth */
+@media (max-width: 768px) {
+    .auth-section {
+        margin-top: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.8rem;
+        width: 100%;
+    }
+    
+    .user-name {
+        max-width: 120px;
+        text-align: center;
+    }
+    
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

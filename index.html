@@ -22,6 +22,23 @@
                     <button class="nav-btn" data-section="subir">
                         <i class="fas fa-upload"></i> Subir Transmisión
                     </button>
+                    <button class="nav-btn" data-section="mis-streams" style="display: none;">
+                        <i class="fas fa-user-circle"></i> Mis Streams
+                    </button>
+                </div>
+                <div class="auth-section">
+                    <div id="user-info" class="user-info" style="display: none;">
+                        <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                        <div class="user-details">
+                            <span id="user-name" class="user-name"></span>
+                            <button id="logout-btn" class="logout-btn">
+                                <i class="fas fa-sign-out-alt"></i> Salir
+                            </button>
+                        </div>
+                    </div>
+                    <button id="login-btn" class="login-btn">
+                        <i class="fab fa-google"></i> Iniciar Sesión
+                    </button>
                 </div>
             </div>
         </nav>
@@ -58,6 +75,24 @@
                         <i class="fas fa-futbol"></i>
                         <p>No hay transmisiones disponibles en este momento</p>
                         <p class="sub-text">¡Sé el primero en compartir una transmisión!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Mis Streams -->
+        <section id="mis-streams" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-user-circle"></i> Mis Transmisiones</h2>
+                    <p>Gestiona las transmisiones que has subido</p>
+                </div>
+                
+                <div id="my-streams-container" class="streams-grid">
+                    <div class="no-streams">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <p>No has subido ninguna transmisión aún</p>
+                        <p class="sub-text">¡Comparte tu primera transmisión!</p>
                     </div>
                 </div>
             </div>

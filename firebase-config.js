@@ -1,5 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    signOut, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -17,3 +23,14 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Proveedor de autenticación con Google
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+    prompt: 'select_account'
+});
+
+// Funciones de autenticación
+export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
+export const signOutUser = () => signOut(auth);
+export { onAuthStateChanged };

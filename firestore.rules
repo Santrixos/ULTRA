@@ -6,25 +6,32 @@ service cloud.firestore {
       // Permitir lectura a todos
       allow read: if true;
       
-      // Permitir creación solo con datos válidos
-      allow create: if isValidStreamData(request.resource.data) &&
+      // Permitir creación solo con datos válidos y usuario autenticado
+      allow create: if request.auth != null &&
+                      isValidStreamData(request.resource.data) &&
                       isValidURL(request.resource.data.link) &&
-                      request.resource.data.timestamp == request.time;
+                      request.resource.data.timestamp == request.time &&
+                      request.resource.data.userId == request.auth.uid;
       
-      // No permitir actualizaciones o eliminaciones por seguridad
-      allow update, delete: if false;
+      // Permitir eliminación solo al creador del stream
+      allow delete: if request.auth != null && 
+                     request.auth.uid == resource.data.userId;
+      
+      // No permitir actualizaciones por seguridad
+      allow update: if false;
     }
     
     // Función para validar datos de transmisión
     function isValidStreamData(data) {
-      return data.keys().hasAll(['equipos', 'plataforma', 'link', 'tiempoPartido', 'liga', 'calidad', 'idioma', 'timestamp']) &&
+      return data.keys().hasAll(['equipos', 'plataforma', 'link', 'tiempoPartido', 'liga', 'calidad', 'idioma', 'timestamp', 'userId']) &&
              data.equipos is string && data.equipos.size() <= 100 &&
              data.plataforma is string && data.plataforma in ['youtube', 'instagram', 'tiktok', 'facebook', 'twitch', 'kick', 'otra'] &&
              data.link is string && data.link.size() <= 500 &&
              data.tiempoPartido is string &&
              data.liga is string &&
              data.calidad is string &&
-             data.idioma is string;
+             data.idioma is string &&
+             data.userId is string;
     }
     
     // Función para validar URLs seguras
