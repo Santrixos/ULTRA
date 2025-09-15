@@ -81,7 +81,7 @@ function showSection(sectionName) {
     });
     
     // Activar el botón correspondiente
-    const targetBtn = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+    const targetBtn = document.querySelector(`[data-section="${sectionName}"]`);
     if (targetBtn) {
         targetBtn.classList.add('active');
     }
@@ -128,7 +128,6 @@ async function handleFormSubmit(e) {
         
         // Cambiar a la sección de transmisiones
         showSection('transmisiones');
-        document.querySelector('[onclick="showSection(\'transmisiones\')"]').click();
         
         // Recargar transmisiones
         loadStreams();
@@ -471,7 +470,7 @@ function filterStreams(platform) {
     });
     
     // Activar el botón correspondiente
-    const targetBtn = document.querySelector(`[onclick="filterStreams('${platform}')"]`);
+    const targetBtn = document.querySelector(`[data-platform="${platform}"]`);
     if (targetBtn) {
         targetBtn.classList.add('active');
     }
@@ -810,9 +809,10 @@ function createNoStreamsElement() {
 function setupNavigationEvents() {
     const navBtns = document.querySelectorAll('.nav-btn');
     navBtns.forEach(btn => {
-        const sectionName = btn.getAttribute('data-section') || 
-                           (btn.textContent.includes('Transmisiones') ? 'transmisiones' : 'subir');
-        btn.addEventListener('click', () => showSection(sectionName));
+        const sectionName = btn.getAttribute('data-section');
+        if (sectionName) {
+            btn.addEventListener('click', () => showSection(sectionName));
+        }
     });
 }
 
@@ -820,9 +820,8 @@ function setupNavigationEvents() {
 function setupFilterEvents() {
     const filterBtns = document.querySelectorAll('.filter-btn:not(.favorites-btn)');
     filterBtns.forEach(btn => {
-        const platform = btn.getAttribute('data-platform') || 
-                        btn.textContent.toLowerCase().replace(' ', '');
-        if (platform !== 'favoritos') {
+        const platform = btn.getAttribute('data-platform');
+        if (platform && platform !== 'favoritos') {
             btn.addEventListener('click', () => filterStreams(platform));
         }
     });

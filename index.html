@@ -16,10 +16,10 @@
                     <span class="company">L3HO</span>
                 </div>
                 <div class="nav-menu">
-                    <button class="nav-btn active" onclick="showSection('transmisiones')">
+                    <button class="nav-btn active" data-section="transmisiones">
                         <i class="fas fa-tv"></i> Transmisiones
                     </button>
-                    <button class="nav-btn" onclick="showSection('subir')">
+                    <button class="nav-btn" data-section="subir">
                         <i class="fas fa-upload"></i> Subir Transmisión
                     </button>
                 </div>
@@ -45,12 +45,12 @@
                 </div>
                 
                 <div class="filters">
-                    <button class="filter-btn active" onclick="filterStreams('all')">Todos</button>
-                    <button class="filter-btn" onclick="filterStreams('youtube')">YouTube</button>
-                    <button class="filter-btn" onclick="filterStreams('instagram')">Instagram</button>
-                    <button class="filter-btn" onclick="filterStreams('tiktok')">TikTok</button>
-                    <button class="filter-btn" onclick="filterStreams('facebook')">Facebook</button>
-                    <button class="filter-btn" onclick="filterStreams('twitch')">Twitch</button>
+                    <button class="filter-btn active" data-platform="all">Todos</button>
+                    <button class="filter-btn" data-platform="youtube">YouTube</button>
+                    <button class="filter-btn" data-platform="instagram">Instagram</button>
+                    <button class="filter-btn" data-platform="tiktok">TikTok</button>
+                    <button class="filter-btn" data-platform="facebook">Facebook</button>
+                    <button class="filter-btn" data-platform="twitch">Twitch</button>
                 </div>
 
                 <div id="streams-container" class="streams-grid">
