@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas para la colección de transmisiones
+    match /streams/{streamId} {
+      // Permitir lectura a todos
+      allow read: if true;
+      
+      // Permitir creación solo con datos válidos
+      allow create: if isValidStreamData(request.resource.data) &&
+                      isValidURL(request.resource.data.link) &&
+                      request.resource.data.timestamp == request.time;
+      
+      // No permitir actualizaciones o eliminaciones por seguridad
+      allow update, delete: if false;
+    }
+    
+    // Función para validar datos de transmisión
+    function isValidStreamData(data) {
+      return data.keys().hasAll(['equipos', 'plataforma', 'link', 'tiempoPartido', 'liga', 'calidad', 'idioma', 'timestamp']) &&
+             data.equipos is string && data.equipos.size() <= 100 &&
+             data.plataforma is string && data.plataforma in ['youtube', 'instagram', 'tiktok', 'facebook', 'twitch', 'kick', 'otra'] &&
+             data.link is string && data.link.size() <= 500 &&
+             data.tiempoPartido is string &&
+             data.liga is string &&
+             data.calidad is string &&
+             data.idioma is string;
+    }
+    
+    // Función para validar URLs seguras
+    function isValidURL(url) {
+      return url.matches('^https?://(www\\.)?(youtube\\.com|youtu\\.be|twitch\\.tv|facebook\\.com|instagram\\.com|tiktok\\.com|kick\\.com)/.*$');
+    }
+  }
+}

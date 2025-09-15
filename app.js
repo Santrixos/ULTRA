@@ -15,6 +15,10 @@ import {
 // Variables globales
 let currentFilter = 'all';
 let streamsData = [];
+let searchQuery = '';
+let favorites = JSON.parse(localStorage.getItem('ultragol_favorites') || '[]');
+let isLoading = false;
+let animationSpeed = 300;
 
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,6 +29,12 @@ function initializeApp() {
     // Configurar eventos
     setupEventListeners();
     
+    // Inicializar búsqueda
+    setupSearch();
+    
+    // Inicializar favoritos
+    initializeFavorites();
+    
     // Cargar transmisiones
     loadStreams();
     
@@ -33,6 +43,9 @@ function initializeApp() {
     
     // Mostrar sección de transmisiones por defecto
     showSection('transmisiones');
+    
+    // Agregar efectos de entrada
+    addPageLoadAnimations();
 }
 
 function setupEventListeners() {
@@ -46,6 +59,10 @@ function setupEventListeners() {
     
     const ligaSelect = document.getElementById('liga');
     ligaSelect.addEventListener('change', toggleOtraLiga);
+    
+    // Remover eventos onclick inline para usar event listeners seguros
+    setupNavigationEvents();
+    setupFilterEvents();
 }
 
 // Navegación entre secciones
@@ -125,11 +142,27 @@ async function handleFormSubmit(e) {
     }
 }
 
-// Validar URL
+// Validar URL de forma segura
 function isValidURL(string) {
     try {
-        new URL(string);
-        return true;
+        const url = new URL(string);
+        // Solo permitir HTTP y HTTPS
+        if (!['http:', 'https:'].includes(url.protocol)) {
+            return false;
+        }
+        
+        // Lista de dominios permitidos por plataforma
+        const allowedDomains = [
+            'youtube.com', 'youtu.be', 'www.youtube.com',
+            'twitch.tv', 'www.twitch.tv',
+            'facebook.com', 'www.facebook.com', 'fb.watch',
+            'instagram.com', 'www.instagram.com',
+            'tiktok.com', 'www.tiktok.com',
+            'kick.com', 'www.kick.com'
+        ];
+        
+        const hostname = url.hostname.toLowerCase();
+        return allowedDomains.some(domain => hostname === domain || hostname.endsWith('.' + domain));
     } catch (_) {
         return false;
     }
@@ -200,34 +233,36 @@ async function loadStreams() {
     }
 }
 
-// Mostrar transmisiones en la interfaz
+// Mostrar transmisiones en la interfaz de forma segura
 function displayStreams(streams) {
     const container = document.getElementById('streams-container');
     
-    // Filtrar por plataforma si es necesario
-    let filteredStreams = streams;
-    if (currentFilter !== 'all') {
-        filteredStreams = streams.filter(stream => 
-            stream.plataforma === currentFilter || 
-            (stream.plataforma === 'otra' && stream.otraPlataforma.toLowerCase().includes(currentFilter))
-        );
-    }
+    // Aplicar filtros
+    let filteredStreams = applyFilters(streams);
+    
+    // Limpiar contenedor
+    container.innerHTML = '';
     
     if (filteredStreams.length === 0) {
-        container.innerHTML = `
-            <div class="no-streams">
-                <i class="fas fa-futbol"></i>
-                <p>No hay transmisiones disponibles en este momento</p>
-                <p class="sub-text">¡Sé el primero en compartir una transmisión!</p>
-            </div>
-        `;
+        const noStreamsDiv = createNoStreamsElement();
+        container.appendChild(noStreamsDiv);
         return;
     }
     
-    container.innerHTML = filteredStreams.map(stream => createStreamCard(stream)).join('');
+    // Agregar skeleton loading
+    if (isLoading) {
+        container.innerHTML = createSkeletonCards(3);
+        return;
+    }
     
-    // Inicializar contadores de tiempo
-    filteredStreams.forEach(stream => {
+    // Crear cards con animación escalonada
+    filteredStreams.forEach((stream, index) => {
+        const card = createStreamCardSafe(stream);
+        card.style.animationDelay = `${index * 100}ms`;
+        card.classList.add('fade-in-up');
+        container.appendChild(card);
+        
+        // Inicializar contador de tiempo
         if (stream.id) {
             updateTimeRemaining(stream.id, stream.createdAt);
         }
@@ -258,55 +293,103 @@ function getTiempoPartidoIcon(tiempo) {
     return iconos[tiempo] || 'fas fa-circle';
 }
 
-// Crear tarjeta de transmisión
-function createStreamCard(stream) {
-    const plataformaDisplay = stream.plataforma === 'otra' ? stream.otraPlataforma : stream.plataforma;
-    const ligaDisplay = stream.liga === 'otra-liga' ? stream.otraLiga : stream.liga;
-    const tiempoPartidoDisplay = getTiempoPartidoDisplay(stream.tiempoPartido);
-    const plataformaIcon = getPlatformIcon(stream.plataforma);
-    const calidadIcon = getQualityIcon(stream.calidad);
-    const tiempoIcon = getTiempoPartidoIcon(stream.tiempoPartido);
+// Crear tarjeta de transmisión de forma segura
+function createStreamCardSafe(stream) {
+    const card = document.createElement('div');
+    card.className = 'stream-card modern-card';
+    card.setAttribute('data-platform', sanitizeAttribute(stream.plataforma));
     
-    return `
-        <div class="stream-card" data-platform="${stream.plataforma}">
-            <div class="stream-header">
-                <div class="stream-teams">${stream.equipos}</div>
-                <div class="stream-platform">
-                    <i class="${plataformaIcon}"></i> ${plataformaDisplay.toUpperCase()}
-                </div>
-            </div>
-            
-            <div class="stream-info">
-                <div>
-                    <i class="fas fa-trophy"></i>
-                    <span>${ligaDisplay.toUpperCase()}</span>
-                </div>
-                <div>
-                    <i class="${tiempoIcon}"></i>
-                    <span>${tiempoPartidoDisplay}</span>
-                </div>
-                <div>
-                    <i class="${calidadIcon}"></i>
-                    <span>${stream.calidad}</span>
-                </div>
-                <div>
-                    <i class="fas fa-language"></i>
-                    <span>${stream.idioma}</span>
-                </div>
-                ${stream.comentarios ? '<div><i class="fas fa-microphone"></i><span>Con comentarios</span></div>' : ''}
-            </div>
-            
-            <div class="stream-actions">
-                <a href="${stream.link}" target="_blank" class="stream-link">
-                    <i class="fas fa-play"></i> Ver Transmisión
-                </a>
-                <div class="time-remaining" id="timer-${stream.id}">
-                    <i class="fas fa-clock"></i>
-                    <span>Cargando...</span>
-                </div>
-            </div>
-        </div>
-    `;
+    // Header
+    const header = document.createElement('div');
+    header.className = 'stream-header';
+    
+    const teams = document.createElement('div');
+    teams.className = 'stream-teams';
+    teams.textContent = sanitizeText(stream.equipos);
+    
+    const platform = document.createElement('div');
+    platform.className = 'stream-platform';
+    const platformIcon = document.createElement('i');
+    platformIcon.className = getPlatformIcon(stream.plataforma);
+    const platformText = document.createElement('span');
+    const plataformaDisplay = stream.plataforma === 'otra' ? stream.otraPlataforma : stream.plataforma;
+    platformText.textContent = sanitizeText(plataformaDisplay).toUpperCase();
+    platform.appendChild(platformIcon);
+    platform.appendChild(document.createTextNode(' '));
+    platform.appendChild(platformText);
+    
+    header.appendChild(teams);
+    header.appendChild(platform);
+    
+    // Info section
+    const info = document.createElement('div');
+    info.className = 'stream-info';
+    
+    const infoItems = [
+        { icon: 'fas fa-trophy', text: stream.liga === 'otra-liga' ? stream.otraLiga : stream.liga },
+        { icon: getTiempoPartidoIcon(stream.tiempoPartido), text: getTiempoPartidoDisplay(stream.tiempoPartido) },
+        { icon: getQualityIcon(stream.calidad), text: stream.calidad },
+        { icon: 'fas fa-language', text: stream.idioma }
+    ];
+    
+    if (stream.comentarios) {
+        infoItems.push({ icon: 'fas fa-microphone', text: 'Con comentarios' });
+    }
+    
+    infoItems.forEach(item => {
+        const div = document.createElement('div');
+        const icon = document.createElement('i');
+        icon.className = item.icon;
+        const span = document.createElement('span');
+        span.textContent = sanitizeText(item.text).toUpperCase();
+        div.appendChild(icon);
+        div.appendChild(span);
+        info.appendChild(div);
+    });
+    
+    // Actions section
+    const actions = document.createElement('div');
+    actions.className = 'stream-actions';
+    
+    // Link seguro
+    const link = document.createElement('a');
+    link.href = sanitizeURL(stream.link);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'stream-link pulse-btn';
+    const linkIcon = document.createElement('i');
+    linkIcon.className = 'fas fa-play';
+    link.appendChild(linkIcon);
+    link.appendChild(document.createTextNode(' Ver Transmisión'));
+    
+    // Timer
+    const timer = document.createElement('div');
+    timer.className = 'time-remaining';
+    timer.id = `timer-${stream.id}`;
+    const timerIcon = document.createElement('i');
+    timerIcon.className = 'fas fa-clock';
+    const timerSpan = document.createElement('span');
+    timerSpan.textContent = 'Cargando...';
+    timer.appendChild(timerIcon);
+    timer.appendChild(timerSpan);
+    
+    // Botón de favoritos
+    const favoriteBtn = createFavoriteButton(stream);
+    
+    // Botón compartir
+    const shareBtn = createShareButton(stream);
+    
+    actions.appendChild(link);
+    actions.appendChild(timer);
+    actions.appendChild(favoriteBtn);
+    actions.appendChild(shareBtn);
+    
+    // Ensamblar card
+    card.appendChild(header);
+    card.appendChild(info);
+    card.appendChild(actions);
+    
+    return card;
 }
 
 // Obtener icono de plataforma
@@ -438,33 +521,313 @@ async function cleanupExpiredStreams() {
     }
 }
 
-// Mostrar notificaciones
+// Mostrar notificaciones de forma segura
 function showNotification(message, type = 'success') {
-    // Crear elemento de notificación
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-        ${message}
-    `;
+    notification.className = `notification modern-notification ${type}`;
     
-    // Agregar al DOM
+    const icon = document.createElement('i');
+    icon.className = `fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`;
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = sanitizeText(message);
+    
+    notification.appendChild(icon);
+    notification.appendChild(messageSpan);
+    
     document.body.appendChild(notification);
     
-    // Mostrar con animación
+    // Animación de entrada
     setTimeout(() => {
-        notification.classList.add('show');
+        notification.classList.add('show', 'bounce-in');
     }, 100);
     
-    // Ocultar después de 3 segundos
+    // Auto-ocultar con animación
     setTimeout(() => {
-        notification.classList.remove('show');
+        notification.classList.add('fade-out');
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (notification.parentNode) {
+                document.body.removeChild(notification);
+            }
         }, 300);
     }, 3000);
 }
 
-// Hacer funciones globales para el HTML
+// ======================== FUNCIONES DE UTILIDAD Y SEGURIDAD ========================
+
+// Sanitizar texto para prevenir XSS
+function sanitizeText(text) {
+    if (typeof text !== 'string') return '';
+    return text.replace(/[<>&'"]/g, (char) => {
+        const entities = { '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&#39;', '"': '&quot;' };
+        return entities[char];
+    });
+}
+
+// Sanitizar URL
+function sanitizeURL(url) {
+    return isValidURL(url) ? url : '#';
+}
+
+// Sanitizar atributos
+function sanitizeAttribute(attr) {
+    if (typeof attr !== 'string') return '';
+    return attr.replace(/['"<>&]/g, '');
+}
+
+// ======================== FUNCIONES DE FILTRADO Y BÚSQUEDA ========================
+
+// Aplicar filtros combinados
+function applyFilters(streams) {
+    let filtered = streams;
+    
+    // Filtro por plataforma
+    if (currentFilter !== 'all') {
+        filtered = filtered.filter(stream => 
+            stream.plataforma === currentFilter || 
+            (stream.plataforma === 'otra' && stream.otraPlataforma && 
+             stream.otraPlataforma.toLowerCase().includes(currentFilter))
+        );
+    }
+    
+    // Filtro por búsqueda
+    if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(stream => 
+            stream.equipos.toLowerCase().includes(query) ||
+            stream.liga.toLowerCase().includes(query) ||
+            (stream.otraLiga && stream.otraLiga.toLowerCase().includes(query))
+        );
+    }
+    
+    return filtered;
+}
+
+// Configurar búsqueda
+function setupSearch() {
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.id = 'search-input';
+    searchInput.placeholder = '🔍 Buscar equipos o ligas...';
+    searchInput.className = 'search-input modern-input';
+    
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'search-container';
+    searchContainer.appendChild(searchInput);
+    
+    const filtersDiv = document.querySelector('.filters');
+    filtersDiv.parentNode.insertBefore(searchContainer, filtersDiv);
+    
+    // Event listener para búsqueda
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            searchQuery = e.target.value;
+            displayStreams(streamsData);
+            
+            // Efecto de búsqueda
+            if (searchQuery) {
+                searchContainer.classList.add('searching');
+            } else {
+                searchContainer.classList.remove('searching');
+            }
+        }, 300);
+    });
+}
+
+// ======================== FUNCIONES DE FAVORITOS ========================
+
+// Inicializar favoritos
+function initializeFavorites() {
+    // Crear botón de vista de favoritos
+    const favoritesBtn = document.createElement('button');
+    favoritesBtn.className = 'filter-btn favorites-btn';
+    favoritesBtn.innerHTML = '<i class="fas fa-heart"></i> Favoritos (' + favorites.length + ')';
+    favoritesBtn.addEventListener('click', () => showFavorites());
+    
+    const filtersDiv = document.querySelector('.filters');
+    filtersDiv.appendChild(favoritesBtn);
+}
+
+// Crear botón de favoritos
+function createFavoriteButton(stream) {
+    const btn = document.createElement('button');
+    btn.className = 'favorite-btn modern-btn';
+    const isFavorite = favorites.includes(stream.id);
+    btn.innerHTML = `<i class="fas fa-heart ${isFavorite ? 'favorited' : ''}"></i>`;
+    btn.title = isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos';
+    
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleFavorite(stream.id, btn);
+    });
+    
+    return btn;
+}
+
+// Toggle favorito
+function toggleFavorite(streamId, btn) {
+    const index = favorites.indexOf(streamId);
+    const heart = btn.querySelector('i');
+    
+    if (index === -1) {
+        favorites.push(streamId);
+        heart.classList.add('favorited');
+        btn.title = 'Quitar de favoritos';
+        btn.classList.add('bounce');
+    } else {
+        favorites.splice(index, 1);
+        heart.classList.remove('favorited');
+        btn.title = 'Agregar a favoritos';
+        btn.classList.add('bounce');
+    }
+    
+    localStorage.setItem('ultragol_favorites', JSON.stringify(favorites));
+    updateFavoritesCounter();
+    
+    // Remover animación
+    setTimeout(() => btn.classList.remove('bounce'), 300);
+}
+
+// Mostrar favoritos
+function showFavorites() {
+    const favoriteStreams = streamsData.filter(stream => favorites.includes(stream.id));
+    displayStreams(favoriteStreams);
+    
+    // Actualizar filtros visuales
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.favorites-btn').classList.add('active');
+    currentFilter = 'favorites';
+}
+
+// Actualizar contador de favoritos
+function updateFavoritesCounter() {
+    const favBtn = document.querySelector('.favorites-btn');
+    if (favBtn) {
+        favBtn.innerHTML = `<i class="fas fa-heart"></i> Favoritos (${favorites.length})`;
+    }
+}
+
+// ======================== FUNCIONES DE COMPARTIR ========================
+
+// Crear botón compartir
+function createShareButton(stream) {
+    const btn = document.createElement('button');
+    btn.className = 'share-btn modern-btn';
+    btn.innerHTML = '<i class="fas fa-share-alt"></i>';
+    btn.title = 'Compartir transmisión';
+    
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        shareStream(stream);
+    });
+    
+    return btn;
+}
+
+// Compartir transmisión
+async function shareStream(stream) {
+    const shareData = {
+        title: `${stream.equipos} - ULTRAGOL`,
+        text: `¡Mira este partido en vivo: ${stream.equipos} (${stream.liga})!`,
+        url: window.location.href
+    };
+    
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            // Fallback: copiar al portapapeles
+            await navigator.clipboard.writeText(
+                `${shareData.text}\n${shareData.url}`
+            );
+            showNotification('¡Enlace copiado al portapapeles!', 'success');
+        }
+    } catch (error) {
+        console.error('Error al compartir:', error);
+    }
+}
+
+// ======================== FUNCIONES DE ANIMACIÓN ========================
+
+// Animaciones de carga de página
+function addPageLoadAnimations() {
+    // Animar logo
+    const logo = document.querySelector('.logo h1');
+    if (logo) {
+        logo.classList.add('logo-glow');
+    }
+    
+    // Animar navegación
+    const navBtns = document.querySelectorAll('.nav-btn');
+    navBtns.forEach((btn, index) => {
+        btn.style.animationDelay = `${index * 100}ms`;
+        btn.classList.add('slide-in-right');
+    });
+}
+
+// Crear skeleton cards para loading
+function createSkeletonCards(count) {
+    let skeletonHTML = '';
+    for (let i = 0; i < count; i++) {
+        skeletonHTML += `
+            <div class="stream-card skeleton-card">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-content"></div>
+                <div class="skeleton-actions"></div>
+            </div>
+        `;
+    }
+    return skeletonHTML;
+}
+
+// Crear elemento "no streams"
+function createNoStreamsElement() {
+    const div = document.createElement('div');
+    div.className = 'no-streams modern-empty-state';
+    
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-futbol bounce';
+    
+    const p1 = document.createElement('p');
+    p1.textContent = 'No hay transmisiones disponibles en este momento';
+    
+    const p2 = document.createElement('p');
+    p2.className = 'sub-text';
+    p2.textContent = '¡Sé el primero en compartir una transmisión!';
+    
+    div.appendChild(icon);
+    div.appendChild(p1);
+    div.appendChild(p2);
+    
+    return div;
+}
+
+// ======================== EVENT HANDLERS SEGUROS ========================
+
+// Configurar navegación sin onclick inline
+function setupNavigationEvents() {
+    const navBtns = document.querySelectorAll('.nav-btn');
+    navBtns.forEach(btn => {
+        const sectionName = btn.getAttribute('data-section') || 
+                           (btn.textContent.includes('Transmisiones') ? 'transmisiones' : 'subir');
+        btn.addEventListener('click', () => showSection(sectionName));
+    });
+}
+
+// Configurar filtros sin onclick inline
+function setupFilterEvents() {
+    const filterBtns = document.querySelectorAll('.filter-btn:not(.favorites-btn)');
+    filterBtns.forEach(btn => {
+        const platform = btn.getAttribute('data-platform') || 
+                        btn.textContent.toLowerCase().replace(' ', '');
+        if (platform !== 'favoritos') {
+            btn.addEventListener('click', () => filterStreams(platform));
+        }
+    });
+}
+
+// Hacer funciones globales para compatibilidad
 window.showSection = showSection;
 window.filterStreams = filterStreams;
