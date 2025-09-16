@@ -30,6 +30,21 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
+// Configurar dominios autorizados para Replit
+auth.settings.appVerificationDisabledForTesting = false;
+
+// Función para manejar dominios no autorizados
+export const handleAuthDomain = (error) => {
+    if (error.code === 'auth/unauthorized-domain') {
+        console.warn('Dominio no autorizado. Configurar en Firebase Console:', window.location.hostname);
+        return {
+            isError: true,
+            message: 'Para usar autenticación, el administrador debe agregar este dominio en Firebase Console.'
+        };
+    }
+    return { isError: false };
+};
+
 // Funciones de autenticación
 export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const signOutUser = () => signOut(auth);

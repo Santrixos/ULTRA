@@ -1,4 +1,4 @@
-import { db, auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './firebase-config.js';
+import { db, auth, signInWithGoogle, signOutUser, onAuthStateChanged, handleAuthDomain } from './firebase-config.js';
 import { 
     collection, 
     addDoc, 
@@ -124,7 +124,10 @@ async function handleFormSubmit(e) {
             createdAt: new Date().toISOString(),
             // Agregar información del usuario (requerido)
             userId: currentUser.uid,
-            userName: currentUser.displayName || 'Usuario'
+            userName: currentUser.displayName || currentUser.email || 'Usuario',
+            userAvatar: currentUser.photoURL || '',
+            // Agregar imagen de portada si se subió
+            portadaURL: formData.get('portada-url') || ''
         };
         
         // Validar URL
@@ -281,6 +284,9 @@ function displayStreams(streams) {
             updateTimeRemaining(stream.id, stream.createdAt);
         }
     });
+    
+    // Agregar efectos de hover
+    addCardHoverEffects();
 }
 
 // Obtener texto del tiempo del partido
@@ -398,10 +404,52 @@ function createStreamCardSafe(stream) {
     actions.appendChild(favoriteBtn);
     actions.appendChild(shareBtn);
     
+    // Agregar información del usuario que subió la transmisión
+    const userInfo = document.createElement('div');
+    userInfo.className = 'stream-user-info';
+    
+    if (stream.userAvatar) {
+        const avatar = document.createElement('img');
+        avatar.src = stream.userAvatar;
+        avatar.className = 'user-avatar-small';
+        avatar.alt = 'Avatar';
+        avatar.onerror = function() { 
+            this.style.display = 'none'; 
+            this.nextElementSibling.style.display = 'inline'; 
+        };
+        userInfo.appendChild(avatar);
+        
+        const avatarIcon = document.createElement('i');
+        avatarIcon.className = 'fas fa-user-circle user-icon-small';
+        avatarIcon.style.display = 'none';
+        userInfo.appendChild(avatarIcon);
+    } else {
+        const avatarIcon = document.createElement('i');
+        avatarIcon.className = 'fas fa-user-circle user-icon-small';
+        userInfo.appendChild(avatarIcon);
+    }
+    
+    const userName = document.createElement('span');
+    userName.className = 'user-name-small';
+    userName.textContent = `Subido por: ${sanitizeText(stream.userName || 'Usuario')}`;
+    userInfo.appendChild(userName);
+    
+    // Imagen de portada si existe
+    if (stream.portadaURL) {
+        const portadaImg = document.createElement('div');
+        portadaImg.className = 'stream-portada';
+        portadaImg.style.backgroundImage = `url(${sanitizeURL(stream.portadaURL)})`;
+        card.insertBefore(portadaImg, header);
+    }
+    
     // Ensamblar card
     card.appendChild(header);
+    card.appendChild(userInfo);
     card.appendChild(info);
     card.appendChild(actions);
+    
+    // Agregar efecto de brillo según la plataforma
+    card.classList.add(`platform-${stream.plataforma}`);
     
     return card;
 }
@@ -596,12 +644,26 @@ function setupAuthentication() {
 
 // Manejar inicio de sesión
 async function handleLogin() {
+    const loginBtn = document.getElementById('login-btn');
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+    
     try {
         const result = await signInWithGoogle();
         showNotification('¡Bienvenido! Has iniciado sesión exitosamente', 'success');
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
-        showNotification('Error al iniciar sesión: ' + error.message, 'error');
+        const domainError = handleAuthDomain(error);
+        
+        if (domainError.isError) {
+            showNotification(domainError.message, 'error');
+            showAuthDomainHelp();
+        } else {
+            showNotification('Error al iniciar sesión: ' + error.message, 'error');
+        }
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar Sesión';
     }
 }
 
@@ -1021,6 +1083,65 @@ function createSkeletonCards(count) {
         `;
     }
     return skeletonHTML;
+}
+
+// ======================== FUNCIONES DE AUTENTICACIÓN MEJORADAS ========================
+
+// Mostrar ayuda para problema de dominio auth
+function showAuthDomainHelp() {
+    const helpDiv = document.createElement('div');
+    helpDiv.className = 'auth-domain-help modern-notification warning';
+    helpDiv.innerHTML = `
+        <div class="help-content">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <h4>Configuración requerida</h4>
+                <p>Para habilitar el login, agrega este dominio en Firebase Console:</p>
+                <code>${window.location.hostname}</code>
+                <p><small>Authentication → Settings → Authorized domains</small></p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="close-help">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(helpDiv);
+    
+    // Auto-ocultar después de 10 segundos
+    setTimeout(() => {
+        if (helpDiv.parentNode) {
+            helpDiv.classList.add('fade-out');
+            setTimeout(() => helpDiv.remove(), 300);
+        }
+    }, 10000);
+}
+
+// Agregar efectos hover a las tarjetas
+function addCardHoverEffects() {
+    const cards = document.querySelectorAll('.stream-card:not(.skeleton-card)');
+    
+    cards.forEach(card => {
+        // Remover listeners anteriores
+        card.removeEventListener('mouseenter', cardHoverIn);
+        card.removeEventListener('mouseleave', cardHoverOut);
+        
+        // Agregar nuevos listeners
+        card.addEventListener('mouseenter', cardHoverIn);
+        card.addEventListener('mouseleave', cardHoverOut);
+    });
+}
+
+// Función de hover in
+function cardHoverIn() {
+    this.style.transform = 'translateY(-10px) scale(1.02)';
+    this.style.boxShadow = '0 20px 40px rgba(0,0,0,0.15)';
+    this.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+}
+
+// Función de hover out
+function cardHoverOut() {
+    this.style.transform = 'translateY(0) scale(1)';
+    this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+    this.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
 }
 
 
