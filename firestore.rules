@@ -9,7 +9,7 @@ service cloud.firestore {
       // Permitir creación solo con datos válidos y usuario autenticado
       allow create: if request.auth != null &&
                       isValidStreamData(request.resource.data) &&
-                      isValidURL(request.resource.data.link) &&
+                      isValidURL(request.resource.data.link, request.resource.data.plataforma) &&
                       request.resource.data.timestamp == request.time &&
                       request.resource.data.userId == request.auth.uid;
       
@@ -19,6 +19,73 @@ service cloud.firestore {
       
       // No permitir actualizaciones por seguridad
       allow update: if false;
+    }
+    
+    // Reglas para calificaciones (estructura: streams/{streamId}/ratings/{userId})
+    match /streams/{streamId}/ratings/{userId} {
+      // Permitir lectura a todos
+      allow read: if true;
+      
+      // Permitir creación solo al usuario autenticado para su propia calificación
+      allow create: if request.auth != null &&
+                      request.auth.uid == userId &&
+                      isValidRatingData(request.resource.data) &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.streamId == streamId;
+      
+      // Permitir eliminación solo al creador de la calificación
+      allow delete: if request.auth != null && 
+                     request.auth.uid == userId &&
+                     request.auth.uid == resource.data.userId;
+      
+      // Permitir actualización solo al creador de la calificación
+      allow update: if request.auth != null && 
+                     request.auth.uid == userId &&
+                     request.auth.uid == resource.data.userId &&
+                     isValidRatingData(request.resource.data);
+    }
+    
+    // Reglas para comentarios
+    match /comments/{commentId} {
+      // Permitir lectura a todos
+      allow read: if true;
+      
+      // Permitir creación solo con datos válidos y usuario autenticado
+      allow create: if request.auth != null &&
+                      isValidCommentData(request.resource.data) &&
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Permitir eliminación solo al creador del comentario
+      allow delete: if request.auth != null && 
+                     request.auth.uid == resource.data.userId;
+      
+      // Permitir actualización solo al creador (para editar contenido)
+      allow update: if request.auth != null && 
+                     request.auth.uid == resource.data.userId &&
+                     isValidCommentData(request.resource.data);
+    }
+    
+    // Reglas para perfiles de usuario (estructura: userProfiles/{userId})
+    match /userProfiles/{userId} {
+      // Permitir lectura a todos
+      allow read: if true;
+      
+      // Permitir creación solo al propietario del perfil
+      allow create: if request.auth != null &&
+                      request.auth.uid == userId &&
+                      isValidProfileData(request.resource.data) &&
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Permitir eliminación solo al propietario
+      allow delete: if request.auth != null && 
+                     request.auth.uid == userId &&
+                     request.auth.uid == resource.data.userId;
+      
+      // Permitir actualización solo al propietario
+      allow update: if request.auth != null && 
+                     request.auth.uid == userId &&
+                     request.auth.uid == resource.data.userId &&
+                     isValidProfileData(request.resource.data);
     }
     
     // Función para validar datos de transmisión
@@ -34,9 +101,48 @@ service cloud.firestore {
              data.userId is string;
     }
     
-    // Función para validar URLs seguras
-    function isValidURL(url) {
+    // Función para validar datos de calificación
+    function isValidRatingData(data) {
+      return data.keys().hasAll(['streamId', 'userId', 'rating', 'timestamp']) &&
+             data.streamId is string &&
+             data.userId is string &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.timestamp != null;
+    }
+    
+    // Función para validar datos de comentario
+    function isValidCommentData(data) {
+      return data.keys().hasAll(['streamId', 'userId', 'userName', 'content', 'timestamp']) &&
+             data.streamId is string &&
+             data.userId is string &&
+             data.userName is string && data.userName.size() <= 100 &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 1000 &&
+             data.timestamp != null;
+    }
+    
+    // Función para validar datos de perfil
+    function isValidProfileData(data) {
+      return data.keys().hasAll(['userId', 'timestamp']) &&
+             data.userId is string &&
+             data.timestamp != null &&
+             // Validar campos opcionales si existen
+             ((!('displayName' in data.keys())) || (data.displayName is string && data.displayName.size() <= 100)) &&
+             ((!('photoURL' in data.keys())) || (data.photoURL is string && data.photoURL.size() <= 500));
+    }
+    
+    // Función para validar URLs básica (cualquier dominio HTTP/HTTPS)
+    function isValidURLBasic(url) {
+      return url.matches('^https?://.*$');
+    }
+    
+    // Función para validar URLs de plataformas específicas
+    function isValidStreamURL(url) {
       return url.matches('^https?://(www\\.)?(youtube\\.com|youtu\\.be|twitch\\.tv|facebook\\.com|instagram\\.com|tiktok\\.com|kick\\.com)/.*$');
+    }
+    
+    // Función para validar URLs según la plataforma
+    function isValidURL(url, platform) {
+      return platform == 'otra' ? isValidURLBasic(url) : isValidStreamURL(url);
     }
   }
 }

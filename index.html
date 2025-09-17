@@ -25,6 +25,9 @@
                     <button class="nav-btn" data-section="mis-streams" style="display: none;">
                         <i class="fas fa-user-circle"></i> Mis Streams
                     </button>
+                    <button class="nav-btn" data-section="perfil" style="display: none;">
+                        <i class="fas fa-user-edit"></i> Mi Perfil
+                    </button>
                 </div>
                 <div class="auth-section">
                     <div id="user-info" class="user-info" style="display: none;">
@@ -97,6 +100,110 @@
                 </div>
             </div>
         </section>
+
+        <!-- Sección de Perfil de Usuario -->
+        <section id="perfil" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-user-edit"></i> Mi Perfil</h2>
+                    <p>Gestiona tu información personal y estadísticas</p>
+                </div>
+
+                <div class="profile-container">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar-section">
+                                <img id="profile-avatar-display" class="profile-avatar-large" src="" alt="Avatar">
+                                <button id="edit-avatar-btn" class="edit-avatar-btn">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <div class="profile-info">
+                                <h3 id="profile-username-display">Usuario</h3>
+                                <p id="profile-email-display">email@ejemplo.com</p>
+                                <button id="edit-username-btn" class="edit-username-btn">
+                                    <i class="fas fa-edit"></i> Editar Nombre
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="profile-stats">
+                            <div class="stat-card">
+                                <div class="stat-number" id="total-streams">0</div>
+                                <div class="stat-label">Transmisiones</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="average-rating">0.0</div>
+                                <div class="stat-label">Calificación Promedio</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="total-comments">0</div>
+                                <div class="stat-label">Comentarios Recibidos</div>
+                            </div>
+                        </div>
+
+                        <div class="profile-recent">
+                            <h4><i class="fas fa-history"></i> Transmisiones Recientes</h4>
+                            <div id="recent-streams-list" class="recent-streams">
+                                <!-- Las transmisiones recientes se cargarán aquí -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal para editar avatar -->
+        <div id="avatar-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-camera"></i> Cambiar Foto de Perfil</h3>
+                    <button class="modal-close" id="close-avatar-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="avatar-form">
+                        <div class="form-group">
+                            <label for="avatar-url">
+                                <i class="fas fa-link"></i> URL de la Imagen
+                            </label>
+                            <input type="url" id="avatar-url" name="avatar-url" placeholder="https://..." required>
+                            <small class="form-help">Ingresa la URL de tu nueva foto de perfil</small>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> Guardar Foto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para editar nombre de usuario -->
+        <div id="username-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-edit"></i> Cambiar Nombre de Usuario</h3>
+                    <button class="modal-close" id="close-username-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="username-form">
+                        <div class="form-group">
+                            <label for="new-username">
+                                <i class="fas fa-user"></i> Nuevo Nombre de Usuario
+                            </label>
+                            <input type="text" id="new-username" name="new-username" placeholder="Mi nuevo nombre" required>
+                            <small class="form-help">Este nombre aparecerá en tus transmisiones</small>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> Guardar Nombre
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <!-- Sección de Subir Transmisión -->
         <section id="subir" class="section">
