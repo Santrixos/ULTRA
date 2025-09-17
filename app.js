@@ -14,6 +14,306 @@ import {
     limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// ======================== ULTRA-CREATIVE SEARCH FUNCTIONALITY ========================
+
+class UltraSearchEngine {
+    constructor() {
+        this.searchInput = document.getElementById('stream-search');
+        this.searchClear = document.getElementById('search-clear');
+        this.searchSuggestions = document.getElementById('search-suggestions');
+        this.streamsContainer = document.getElementById('streams-container');
+        this.allStreams = [];
+        this.isSearching = false;
+        
+        this.initializeSearch();
+    }
+    
+    initializeSearch() {
+        if (!this.searchInput) return;
+        
+        // Input events
+        this.searchInput.addEventListener('input', (e) => this.handleSearchInput(e));
+        this.searchInput.addEventListener('focus', () => this.showSuggestions());
+        this.searchInput.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        
+        // Clear button
+        this.searchClear.addEventListener('click', () => this.clearSearch());
+        
+        // Suggestion clicks
+        this.searchSuggestions.addEventListener('click', (e) => this.handleSuggestionClick(e));
+        
+        // Click outside to close
+        document.addEventListener('click', (e) => this.handleOutsideClick(e));
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => this.handleGlobalKeyboard(e));
+    }
+    
+    handleSearchInput(e) {
+        const searchTerm = e.target.value.trim();
+        
+        // Show/hide clear button
+        this.searchClear.classList.toggle('show', searchTerm.length > 0);
+        
+        // Real-time search
+        if (searchTerm.length >= 2) {
+            this.performSearch(searchTerm);
+            this.hideSuggestions();
+        } else if (searchTerm.length === 0) {
+            this.clearSearch();
+        }
+    }
+    
+    performSearch(searchTerm) {
+        this.isSearching = true;
+        this.showSearchLoading();
+        
+        // Simulate search delay for better UX
+        setTimeout(() => {
+            const filteredStreams = this.filterStreams(searchTerm);
+            this.displaySearchResults(searchTerm, filteredStreams);
+            this.isSearching = false;
+        }, 300);
+    }
+    
+    filterStreams(searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return this.allStreams.filter(stream => {
+            return stream.equipos?.toLowerCase().includes(term) ||
+                   stream.liga?.toLowerCase().includes(term) ||
+                   stream.plataforma?.toLowerCase().includes(term) ||
+                   stream.idioma?.toLowerCase().includes(term);
+        });
+    }
+    
+    displaySearchResults(searchTerm, results) {
+        // Show search info
+        this.showSearchInfo(searchTerm, results.length);
+        
+        // Display results or no results message
+        if (results.length > 0) {
+            this.renderStreams(results, searchTerm);
+        } else {
+            this.showNoResults(searchTerm);
+        }
+    }
+    
+    showSearchInfo(searchTerm, resultsCount) {
+        const existingInfo = document.querySelector('.search-results-info');
+        if (existingInfo) existingInfo.remove();
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'search-results-info';
+        infoDiv.innerHTML = `
+            <i class="fas fa-search"></i>
+            Se encontraron <strong>${resultsCount}</strong> transmisiones para 
+            "<span class="search-term">${searchTerm}</span>"
+        `;
+        
+        this.streamsContainer.parentNode.insertBefore(infoDiv, this.streamsContainer);
+    }
+    
+    showNoResults(searchTerm) {
+        this.streamsContainer.innerHTML = `
+            <div class="no-streams">
+                <i class="fas fa-search"></i>
+                <p>No se encontraron transmisiones para "${searchTerm}"</p>
+                <p class="sub-text">Intenta con otros términos como nombres de equipos o ligas</p>
+                <button class="action-btn primary" onclick="ultraSearch.clearSearch()">
+                    <i class="fas fa-arrow-left"></i> Ver todas las transmisiones
+                </button>
+            </div>
+        `;
+    }
+    
+    renderStreams(streams, searchTerm = '') {
+        this.streamsContainer.innerHTML = '';
+        
+        streams.forEach(stream => {
+            const streamCard = this.createStreamCard(stream, searchTerm);
+            this.streamsContainer.appendChild(streamCard);
+        });
+    }
+    
+    createStreamCard(stream, searchTerm = '') {
+        const card = document.createElement('div');
+        card.className = 'stream-card';
+        
+        // Highlight search terms
+        const highlightText = (text) => {
+            if (!searchTerm || !text) return text;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        };
+        
+        card.innerHTML = `
+            <div class="stream-card-header">
+                <div class="stream-teams">${highlightText(stream.equipos)}</div>
+                <div class="stream-meta">
+                    <span class="stream-badge live">EN VIVO</span>
+                    <span class="stream-badge platform-badge">${stream.plataforma}</span>
+                    <span class="stream-badge quality-badge">${stream.calidad}</span>
+                </div>
+            </div>
+            <div class="stream-card-body">
+                <div class="stream-info">
+                    <div class="info-item">
+                        <i class="fas fa-trophy"></i>
+                        <span>${highlightText(stream.liga)}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-language"></i>
+                        <span>${highlightText(stream.idioma)}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>${stream.tiempoPartido}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-user"></i>
+                        <span>${stream.usuario}</span>
+                    </div>
+                </div>
+                <div class="stream-actions">
+                    <button class="action-btn primary" onclick="window.open('${stream.link}', '_blank')">
+                        <i class="fas fa-play"></i> Ver Stream
+                    </button>
+                    <button class="action-btn" onclick="ultraSearch.copyStreamLink('${stream.link}')">
+                        <i class="fas fa-copy"></i> Copiar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    showSuggestions() {
+        if (this.searchInput.value.trim().length === 0) {
+            this.searchSuggestions.classList.add('show');
+        }
+    }
+    
+    hideSuggestions() {
+        this.searchSuggestions.classList.remove('show');
+    }
+    
+    handleSuggestionClick(e) {
+        const suggestionItem = e.target.closest('.suggestion-item');
+        if (suggestionItem) {
+            const searchTerm = suggestionItem.dataset.search;
+            this.searchInput.value = searchTerm;
+            this.searchClear.classList.add('show');
+            this.hideSuggestions();
+            this.performSearch(searchTerm);
+        }
+    }
+    
+    handleOutsideClick(e) {
+        if (!e.target.closest('.search-wrapper')) {
+            this.hideSuggestions();
+        }
+    }
+    
+    handleKeyboard(e) {
+        if (e.key === 'Escape') {
+            this.clearSearch();
+            this.searchInput.blur();
+        } else if (e.key === 'Enter') {
+            const searchTerm = this.searchInput.value.trim();
+            if (searchTerm.length >= 2) {
+                this.performSearch(searchTerm);
+                this.hideSuggestions();
+            }
+        }
+    }
+    
+    handleGlobalKeyboard(e) {
+        // Ctrl/Cmd + K to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            this.searchInput.focus();
+            this.showSuggestions();
+        }
+        
+        // Escape to clear search
+        if (e.key === 'Escape' && this.isSearching) {
+            this.clearSearch();
+        }
+    }
+    
+    clearSearch() {
+        this.searchInput.value = '';
+        this.searchClear.classList.remove('show');
+        this.hideSuggestions();
+        
+        // Remove search info
+        const searchInfo = document.querySelector('.search-results-info');
+        if (searchInfo) searchInfo.remove();
+        
+        // Show all streams
+        this.displayAllStreams();
+    }
+    
+    displayAllStreams() {
+        if (this.allStreams.length > 0) {
+            this.renderStreams(this.allStreams);
+        } else {
+            this.streamsContainer.innerHTML = `
+                <div class="no-streams">
+                    <i class="fas fa-futbol"></i>
+                    <p>No hay transmisiones disponibles en este momento</p>
+                    <p class="sub-text">¡Sé el primero en compartir una transmisión!</p>
+                </div>
+            `;
+        }
+    }
+    
+    showSearchLoading() {
+        this.streamsContainer.innerHTML = `
+            <div class="search-loading">
+                <span>Buscando transmisiones...</span>
+            </div>
+        `;
+    }
+    
+    copyStreamLink(link) {
+        navigator.clipboard.writeText(link).then(() => {
+            // Show copy success animation
+            this.showToast('¡Link copiado al portapapeles!', 'success');
+        }).catch(() => {
+            this.showToast('Error al copiar el link', 'error');
+        });
+    }
+    
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+    }
+    
+    updateStreams(streams) {
+        this.allStreams = streams;
+        if (!this.isSearching && this.searchInput.value.trim() === '') {
+            this.displayAllStreams();
+        }
+    }
+}
+
+// Initialize search engine
+const ultraSearch = new UltraSearchEngine();
+
 // Variables globales
 let currentFilter = 'all';
 let streamsData = [];

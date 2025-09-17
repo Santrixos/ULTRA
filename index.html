@@ -69,6 +69,33 @@
                     <p>Encuentra las mejores transmisiones de fútbol aquí</p>
                 </div>
                 
+                <!-- Buscador Creativo -->
+                <div class="search-container">
+                    <div class="search-wrapper">
+                        <div class="search-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <input type="text" id="stream-search" class="search-input" placeholder="Buscar equipos, ligas o transmisiones...">
+                        <div class="search-suggestions" id="search-suggestions">
+                            <div class="suggestion-category">
+                                <h4><i class="fas fa-users"></i> Equipos Populares</h4>
+                                <div class="suggestion-item" data-search="Real Madrid">Real Madrid</div>
+                                <div class="suggestion-item" data-search="Barcelona">Barcelona</div>
+                                <div class="suggestion-item" data-search="Manchester United">Manchester United</div>
+                            </div>
+                            <div class="suggestion-category">
+                                <h4><i class="fas fa-trophy"></i> Ligas</h4>
+                                <div class="suggestion-item" data-search="Liga MX">Liga MX</div>
+                                <div class="suggestion-item" data-search="Champions League">Champions League</div>
+                                <div class="suggestion-item" data-search="Premier League">Premier League</div>
+                            </div>
+                        </div>
+                        <button class="search-clear" id="search-clear">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="filters">
                     <button class="filter-btn active" data-platform="all">Todos</button>
                     <button class="filter-btn" data-platform="youtube">YouTube</button>
