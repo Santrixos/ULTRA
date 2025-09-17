@@ -2,37 +2,37 @@
 
 /* Design Tokens */
 :root {
-    /* Brand Colors - Creative Neon Sport Theme */
-    --bg-primary: #0B0F1A;
-    --bg-surface: #121826; 
-    --bg-elevated: #1A1F2E;
-    --bg-glass: rgba(18, 24, 38, 0.8);
+    /* Brand Colors - Black, Orange & White Theme */
+    --bg-primary: #000000;
+    --bg-surface: #1a1a1a; 
+    --bg-elevated: #2a2a2a;
+    --bg-glass: rgba(26, 26, 26, 0.9);
     
     /* Accent Colors */
     --accent-orange: #FF6B35;
-    --accent-neon-blue: #00D9FF;
-    --accent-electric-purple: #BD00FF;
-    --accent-lime: #49FF4A;
-    --accent-cyan: #00E5FF;
-    --accent-magenta: #FF3FB4;
+    --accent-orange-light: #FF8757;
+    --accent-orange-dark: #E55A2B;
+    --accent-white: #FFFFFF;
+    --accent-gray: #666666;
+    --accent-dark-gray: #333333;
     
     /* Status Colors */
-    --success: #00FF88;
-    --warning: #FFDD44;
+    --success: #FF6B35;
+    --warning: #FF6B35;
     --error: #FF4757;
-    --info: var(--accent-neon-blue);
+    --info: var(--accent-orange);
     
     /* Text Colors */
     --text-primary: #FFFFFF;
-    --text-secondary: #B8BCC8;
-    --text-muted: #6B7280;
+    --text-secondary: #CCCCCC;
+    --text-muted: #999999;
     --text-inverse: var(--bg-primary);
     
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-magenta) 50%, var(--accent-electric-purple) 100%);
-    --gradient-card: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(0, 217, 255, 0.1) 100%);
+    --gradient-hero: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-orange-light) 100%);
+    --gradient-card: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 107, 53, 0.05) 100%);
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-    --gradient-border: linear-gradient(135deg, var(--accent-orange), var(--accent-neon-blue));
+    --gradient-border: linear-gradient(135deg, var(--accent-orange), var(--accent-orange-light));
     
     /* Typography Scale */
     --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
@@ -66,12 +66,12 @@
     --radius-full: 9999px;
     
     /* Shadows */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 32px rgba(255, 107, 53, 0.4);
-    --shadow-neon: 0 0 40px rgba(0, 217, 255, 0.6);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 32px rgba(255, 107, 53, 0.6);
+    --shadow-orange: 0 0 40px rgba(255, 107, 53, 0.4);
     
     /* Motion System */
     --duration-fast: 150ms;
@@ -101,9 +101,8 @@ html {
 body {
     font-family: var(--font-body);
     background: 
-        radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 217, 255, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(189, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
         var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
@@ -116,9 +115,9 @@ body {
 /* ======================== ENHANCED HEADER & NAVIGATION ======================== */
 
 .navbar {
-    background: rgba(11, 15, 26, 0.95);
+    background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 107, 53, 0.3);
     position: sticky;
     top: 0;
     z-index: 1000;
