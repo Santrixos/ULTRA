@@ -2010,14 +2010,14 @@ function createShareButton(stream) {
     
     btn.addEventListener('click', (e) => {
         e.preventDefault();
-        shareStream(stream);
+        shareStreamFunction(stream);
     });
     
     return btn;
 }
 
 // Compartir transmisión
-async function shareStream(stream) {
+async function shareStreamFunction(stream) {
     const shareData = {
         title: `${stream.equipos} - ULTRAGOL`,
         text: `¡Mira este partido en vivo: ${stream.equipos} (${stream.liga})!`,
@@ -2165,3 +2165,223 @@ function setupFilterEvents() {
 // Hacer funciones globales para compatibilidad
 window.showSection = showSection;
 window.filterStreams = filterStreams;
+
+// ======================== LIVE STREAM IFRAME CONTROLS ========================
+
+// Función para pantalla completa del iframe
+function toggleFullscreen() {
+    const iframe = document.querySelector('.iframe-container iframe');
+    const container = document.querySelector('.iframe-container');
+    
+    if (iframe && container) {
+        try {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().then(() => {
+                    updateFullscreenButton(true);
+                    showToast('Modo pantalla completa activado', 'success');
+                }).catch((err) => {
+                    console.warn('Error al activar pantalla completa:', err);
+                    showToast('No se pudo activar pantalla completa', 'error');
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    updateFullscreenButton(false);
+                    showToast('Pantalla completa desactivada', 'info');
+                }).catch((err) => {
+                    console.warn('Error al salir de pantalla completa:', err);
+                });
+            }
+        } catch (error) {
+            console.warn('Función de pantalla completa no soportada:', error);
+            showToast('Pantalla completa no soportada en este navegador', 'error');
+        }
+    }
+}
+
+// Actualizar el botón de pantalla completa
+function updateFullscreenButton(isFullscreen) {
+    const btn = document.querySelector('.fullscreen-btn');
+    if (btn) {
+        const icon = btn.querySelector('i');
+        const text = btn.querySelector('span');
+        
+        if (isFullscreen) {
+            icon.className = 'fas fa-compress';
+            text.textContent = 'Salir de Pantalla Completa';
+        } else {
+            icon.className = 'fas fa-expand';
+            text.textContent = 'Pantalla Completa';
+        }
+    }
+}
+
+// Función para actualizar el stream
+function refreshStream() {
+    const iframe = document.querySelector('.iframe-container iframe');
+    const btn = document.querySelector('.refresh-btn');
+    
+    if (iframe && btn) {
+        // Animar el botón
+        const icon = btn.querySelector('i');
+        icon.style.animation = 'spin 1s linear infinite';
+        btn.disabled = true;
+        
+        // Actualizar iframe
+        const currentSrc = iframe.src;
+        iframe.src = '';
+        
+        setTimeout(() => {
+            iframe.src = currentSrc;
+            icon.style.animation = '';
+            btn.disabled = false;
+            showToast('Stream actualizado correctamente', 'success');
+        }, 1000);
+    }
+}
+
+// Función para compartir el stream en vivo
+function shareLiveStream() {
+    const streamUrl = window.location.href + '#live-stream';
+    
+    if (navigator.share) {
+        // API Web Share nativa (móviles)
+        navigator.share({
+            title: 'ULTRAGOL - Transmisión En Vivo',
+            text: 'Disfruta de transmisiones de fútbol en vivo con ULTRAGOL',
+            url: streamUrl
+        }).then(() => {
+            showToast('Stream compartido exitosamente', 'success');
+        }).catch((err) => {
+            console.warn('Error al compartir:', err);
+            fallbackShare(streamUrl);
+        });
+    } else {
+        // Fallback - copiar al portapapeles
+        fallbackShare(streamUrl);
+    }
+}
+
+// Función de respaldo para compartir
+function fallbackShare(url) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Link copiado al portapapeles', 'success');
+        }).catch(() => {
+            manualCopyFallback(url);
+        });
+    } else {
+        manualCopyFallback(url);
+    }
+}
+
+// Función manual de copia (para navegadores muy antiguos)
+function manualCopyFallback(url) {
+    const textArea = document.createElement('textarea');
+    textArea.value = url;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showToast('Link copiado al portapapeles', 'success');
+    } catch (err) {
+        console.warn('Error al copiar:', err);
+        showToast('No se pudo copiar el link', 'error');
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
+
+// Escuchar cambios de pantalla completa (mover este listener al final)
+function setupFullscreenListener() {
+    document.addEventListener('fullscreenchange', () => {
+        updateFullscreenButton(!!document.fullscreenElement);
+    });
+}
+
+// Llamar la función para configurar el listener
+setupFullscreenListener();
+
+// Funciones de animación CSS para efectos
+function addSpinAnimation() {
+    if (!document.getElementById('spin-animation')) {
+        const style = document.createElement('style');
+        style.id = 'spin-animation';
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Función de actualización de contador de espectadores (simulada)
+function updateViewerCount() {
+    const viewerElement = document.getElementById('viewer-count');
+    if (viewerElement) {
+        const baseCount = 2847;
+        const variation = Math.floor(Math.random() * 100) - 50; // Variación de ±50
+        const newCount = Math.max(1000, baseCount + variation);
+        
+        viewerElement.textContent = `${newCount.toLocaleString()} espectadores`;
+    }
+}
+
+// Función para simular actualizaciones en tiempo real
+function initializeLiveUpdates() {
+    // Actualizar contador de espectadores cada 30 segundos
+    setInterval(updateViewerCount, 30000);
+    
+    // Actualizar tiempo del partido cada minuto (simulado)
+    setInterval(() => {
+        const timeElement = document.querySelector('.match-time span');
+        if (timeElement && timeElement.textContent.includes('67\'')) {
+            const currentMinute = parseInt(timeElement.textContent.match(/\d+/)[0]);
+            if (currentMinute < 90) {
+                timeElement.textContent = `2° Tiempo - ${currentMinute + 1}'`;
+            }
+        }
+    }, 60000);
+}
+
+// Inicializar las funciones cuando se carga la página de stream en vivo
+document.addEventListener('DOMContentLoaded', () => {
+    addSpinAnimation();
+    initializeLiveUpdates();
+});
+
+// Verificar si showToast existe, si no crear una implementación simple
+if (typeof window.showToast === 'undefined') {
+    window.showToast = function(message, type) {
+        console.log(`Toast [${type}]: ${message}`);
+        // Implementación simple de toast
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type} show`;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation' : 'info'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    };
+}
+
+// Hacer las funciones globales para que funcionen con onclick
+window.toggleFullscreen = toggleFullscreen;
+window.refreshStream = refreshStream;
+window.shareLiveStream = shareLiveStream;
+window.showToast = window.showToast; // Ensure showToast is also globally available

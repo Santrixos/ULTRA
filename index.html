@@ -24,6 +24,9 @@
                     <button class="nav-btn active" data-section="transmisiones">
                         <i class="fas fa-tv"></i> Transmisiones
                     </button>
+                    <button class="nav-btn" data-section="live-stream">
+                        <i class="fas fa-satellite-dish"></i> Stream En Vivo
+                    </button>
                     <button class="nav-btn" data-section="subir">
                         <i class="fas fa-upload"></i> Subir Transmisión
                     </button>
@@ -110,6 +113,123 @@
                         <i class="fas fa-futbol"></i>
                         <p>No hay transmisiones disponibles en este momento</p>
                         <p class="sub-text">¡Sé el primero en compartir una transmisión!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Stream En Vivo con iframe -->
+        <section id="live-stream" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-satellite-dish"></i> Transmisión En Vivo Premium</h2>
+                    <p>Disfruta de transmisiones de fútbol en alta calidad con múltiples opciones</p>
+                </div>
+
+                <div class="live-stream-container">
+                    <div class="iframe-wrapper">
+                        <div class="stream-info-bar">
+                            <div class="live-indicator">
+                                <i class="fas fa-circle"></i>
+                                <span>EN VIVO</span>
+                            </div>
+                            <div class="stream-quality">
+                                <i class="fas fa-hd-video"></i>
+                                <span>FULL HD</span>
+                            </div>
+                            <div class="stream-viewers">
+                                <i class="fas fa-users"></i>
+                                <span id="viewer-count">2,847 espectadores</span>
+                            </div>
+                        </div>
+                        
+                        <div class="iframe-container">
+                            <iframe 
+                                src="https://pxnel.donromans.com/" 
+                                frameborder="0" 
+                                allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                title="ULTRAGOL Stream Premium">
+                            </iframe>
+                        </div>
+                        
+                        <div class="stream-controls">
+                            <button class="control-btn fullscreen-btn" onclick="toggleFullscreen()">
+                                <i class="fas fa-expand"></i>
+                                <span>Pantalla Completa</span>
+                            </button>
+                            <button class="control-btn refresh-btn" onclick="refreshStream()">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Actualizar</span>
+                            </button>
+                            <button class="control-btn share-btn" onclick="shareLiveStream()">
+                                <i class="fas fa-share"></i>
+                                <span>Compartir</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Panel lateral con información adicional -->
+                    <div class="stream-sidebar">
+                        <div class="current-match">
+                            <h3><i class="fas fa-futbol"></i> Partido Actual</h3>
+                            <div class="match-info">
+                                <div class="teams">
+                                    <span class="team">Real Madrid</span>
+                                    <span class="vs">VS</span>
+                                    <span class="team">Barcelona</span>
+                                </div>
+                                <div class="match-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span>2° Tiempo - 67'</span>
+                                </div>
+                                <div class="score">
+                                    <span class="score-home">2</span>
+                                    <span class="score-separator">-</span>
+                                    <span class="score-away">1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="upcoming-matches">
+                            <h3><i class="fas fa-calendar"></i> Próximos Partidos</h3>
+                            <div class="match-list">
+                                <div class="match-item">
+                                    <div class="match-teams">Liverpool vs Man City</div>
+                                    <div class="match-time">19:00</div>
+                                </div>
+                                <div class="match-item">
+                                    <div class="match-teams">PSG vs Bayern</div>
+                                    <div class="match-time">21:45</div>
+                                </div>
+                                <div class="match-item">
+                                    <div class="match-teams">Juventus vs Milan</div>
+                                    <div class="match-time">22:00</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stream-stats">
+                            <h3><i class="fas fa-chart-line"></i> Estadísticas</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-value">98%</span>
+                                    <span class="stat-label">Calidad</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">0ms</span>
+                                    <span class="stat-label">Latencia</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">1080p</span>
+                                    <span class="stat-label">Resolución</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">60fps</span>
+                                    <span class="stat-label">FPS</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
