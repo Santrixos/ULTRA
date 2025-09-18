@@ -1067,37 +1067,6 @@ function fallbackShare(stream) {
     }
 }
 
-// Calificar stream
-function rateStream(streamId, rating) {
-    const ratingsKey = 'ultragol_ratings';
-    const ratings = JSON.parse(localStorage.getItem(ratingsKey) || '{}');
-    
-    ratings[streamId] = rating;
-    localStorage.setItem(ratingsKey, JSON.stringify(ratings));
-    
-    // Actualizar estrellas visualmente
-    const card = document.querySelector(`[id="timer-${streamId}"]`)?.closest('.stream-card');
-    if (card) {
-        const stars = card.querySelectorAll('.rating-stars i');
-        stars.forEach((star, index) => {
-            if (index < rating) {
-                star.style.color = '#ffd700';
-                star.style.filter = 'drop-shadow(0 0 8px #ffd700)';
-            } else {
-                star.style.color = '#666';
-                star.style.filter = 'none';
-            }
-        });
-        
-        // Actualizar contador
-        const ratingCount = card.querySelector('.rating-stars').nextElementSibling.nextElementSibling;
-        if (ratingCount) {
-            ratingCount.textContent = `(${rating}.0/5 - 1 voto)`;
-        }
-    }
-    
-    showNotification(`⭐ Has calificado con ${rating} estrella${rating > 1 ? 's' : ''}`, 'success');
-}
 
 // Toggle comentarios
 function toggleComments(streamId) {
