@@ -683,159 +683,227 @@ function getTiempoPartidoIcon(tiempo) {
     return iconos[tiempo] || 'fas fa-circle';
 }
 
-// Crear tarjeta de transmisión de forma segura
+// Crear tarjeta de transmisión PREMIUM GAMING STYLE
 function createStreamCardSafe(stream) {
     const card = document.createElement('div');
-    card.className = 'stream-card modern-card';
+    card.className = 'stream-card';
     card.setAttribute('data-platform', sanitizeAttribute(stream.plataforma));
     
-    // Header
+    // ========== HEADER PREMIUM con glassmorphism ==========
     const header = document.createElement('div');
-    header.className = 'stream-header';
+    header.className = 'stream-card-header';
     
+    // Título de equipos con emoji de balón animado
     const teams = document.createElement('div');
     teams.className = 'stream-teams';
     teams.textContent = sanitizeText(stream.equipos);
     
-    const platform = document.createElement('div');
-    platform.className = 'stream-platform';
-    const platformIcon = document.createElement('i');
-    platformIcon.className = getPlatformIcon(stream.plataforma);
-    const platformText = document.createElement('span');
+    // Meta badges con animaciones
+    const meta = document.createElement('div');
+    meta.className = 'stream-meta';
+    
+    // Badge EN VIVO con pulso
+    const liveBadge = document.createElement('span');
+    liveBadge.className = 'stream-badge live';
+    liveBadge.textContent = 'EN VIVO';
+    
+    // Badge de plataforma con gradiente
+    const platformBadge = document.createElement('span');
+    platformBadge.className = 'stream-badge platform-badge';
     const plataformaDisplay = stream.plataforma === 'otra' ? stream.otraPlataforma : stream.plataforma;
-    platformText.textContent = sanitizeText(plataformaDisplay).toUpperCase();
-    platform.appendChild(platformIcon);
-    platform.appendChild(document.createTextNode(' '));
-    platform.appendChild(platformText);
+    platformBadge.textContent = sanitizeText(plataformaDisplay).toUpperCase();
+    
+    // Badge de calidad con efectos
+    const qualityBadge = document.createElement('span');
+    qualityBadge.className = 'stream-badge quality-badge';
+    qualityBadge.textContent = stream.calidad.toUpperCase();
+    
+    meta.appendChild(liveBadge);
+    meta.appendChild(platformBadge);
+    meta.appendChild(qualityBadge);
     
     header.appendChild(teams);
-    header.appendChild(platform);
+    header.appendChild(meta);
     
-    // Info section
+    // ========== BODY PREMIUM con efectos ==========
+    const body = document.createElement('div');
+    body.className = 'stream-card-body';
+    
+    // Info grid moderna
     const info = document.createElement('div');
     info.className = 'stream-info';
     
+    // Info items con hover effects
     const infoItems = [
         { icon: 'fas fa-trophy', text: stream.liga === 'otra-liga' ? stream.otraLiga : stream.liga },
         { icon: getTiempoPartidoIcon(stream.tiempoPartido), text: getTiempoPartidoDisplay(stream.tiempoPartido) },
-        { icon: getQualityIcon(stream.calidad), text: stream.calidad },
-        { icon: 'fas fa-language', text: stream.idioma }
+        { icon: 'fas fa-language', text: stream.idioma.toUpperCase() },
+        { icon: 'fas fa-user-circle', text: sanitizeText(stream.userName || 'Usuario') }
     ];
     
     if (stream.comentarios) {
-        infoItems.push({ icon: 'fas fa-microphone', text: 'Con comentarios' });
+        infoItems.push({ icon: 'fas fa-microphone', text: 'CON COMENTARIOS' });
     }
     
     infoItems.forEach(item => {
-        const div = document.createElement('div');
+        const infoItem = document.createElement('div');
+        infoItem.className = 'info-item';
+        
         const icon = document.createElement('i');
         icon.className = item.icon;
+        
         const span = document.createElement('span');
-        span.textContent = sanitizeText(item.text).toUpperCase();
-        div.appendChild(icon);
-        div.appendChild(span);
-        info.appendChild(div);
+        span.textContent = sanitizeText(item.text);
+        
+        infoItem.appendChild(icon);
+        infoItem.appendChild(span);
+        info.appendChild(infoItem);
     });
     
-    // Actions section
+    // ========== ACTIONS PREMIUM con botones gaming ==========
     const actions = document.createElement('div');
     actions.className = 'stream-actions';
     
-    // Link seguro (usar validación básica para "otra plataforma")
-    const link = document.createElement('a');
-    if (stream.plataforma === 'otra') {
-        link.href = isValidURLBasic(stream.link) ? stream.link : '#';
-    } else {
-        link.href = sanitizeURL(stream.link);
-    }
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.className = 'stream-link pulse-btn';
-    const linkIcon = document.createElement('i');
-    linkIcon.className = 'fas fa-play';
-    link.appendChild(linkIcon);
-    link.appendChild(document.createTextNode(' Ver Transmisión'));
+    // Botón principal VER TRANSMISIÓN
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'action-btn primary';
+    viewBtn.innerHTML = '<i class="fas fa-play"></i> VER TRANSMISIÓN';
+    viewBtn.onclick = () => {
+        const link = stream.plataforma === 'otra' ? 
+            (isValidURLBasic(stream.link) ? stream.link : '#') : 
+            sanitizeURL(stream.link);
+        if (link && link !== '#') {
+            window.open(link, '_blank', 'noopener,noreferrer');
+        }
+    };
     
-    // Timer
-    const timer = document.createElement('div');
-    timer.className = 'time-remaining';
-    timer.id = `timer-${stream.id}`;
-    const timerIcon = document.createElement('i');
-    timerIcon.className = 'fas fa-clock';
-    const timerSpan = document.createElement('span');
-    timerSpan.textContent = 'Cargando...';
-    timer.appendChild(timerIcon);
-    timer.appendChild(timerSpan);
+    // Botón secundario FAVORITOS
+    const favoriteBtn = document.createElement('button');
+    favoriteBtn.className = 'action-btn';
+    favoriteBtn.innerHTML = '<i class="fas fa-heart"></i> FAVORITO';
+    favoriteBtn.onclick = () => toggleFavorite(stream.id);
     
-    // Botón de favoritos
-    const favoriteBtn = createFavoriteButton(stream);
+    // Botón COMPARTIR
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'action-btn';
+    shareBtn.innerHTML = '<i class="fas fa-share"></i> COMPARTIR';
+    shareBtn.onclick = () => shareStream(stream);
     
-    // Botón compartir
-    const shareBtn = createShareButton(stream);
-    
-    // Sistema de calificaciones
-    const ratingSection = createRatingSection(stream);
-    
-    // Botón de comentarios
-    const commentsBtn = createCommentsButton(stream);
-    
-    actions.appendChild(link);
-    actions.appendChild(timer);
+    actions.appendChild(viewBtn);
     actions.appendChild(favoriteBtn);
     actions.appendChild(shareBtn);
-    actions.appendChild(ratingSection);
-    actions.appendChild(commentsBtn);
     
-    // Agregar información del usuario que subió la transmisión
+    // ========== TIMER PREMIUM ==========
+    const timerContainer = document.createElement('div');
+    timerContainer.className = 'info-item';
+    timerContainer.style.marginTop = 'var(--space-lg)';
+    timerContainer.style.justifyContent = 'center';
+    timerContainer.style.background = 'rgba(0, 255, 65, 0.1)';
+    timerContainer.style.borderColor = 'rgba(0, 255, 65, 0.3)';
+    
+    const timerIcon = document.createElement('i');
+    timerIcon.className = 'fas fa-clock';
+    timerIcon.style.color = 'var(--accent-green)';
+    
+    const timerSpan = document.createElement('span');
+    timerSpan.id = `timer-${stream.id}`;
+    timerSpan.textContent = 'Cargando tiempo...';
+    timerSpan.style.color = 'var(--accent-green)';
+    timerSpan.style.fontWeight = '600';
+    
+    timerContainer.appendChild(timerIcon);
+    timerContainer.appendChild(timerSpan);
+    
+    // ========== USER INFO PREMIUM ==========
     const userInfo = document.createElement('div');
-    userInfo.className = 'stream-user-info';
+    userInfo.className = 'info-item';
+    userInfo.style.marginTop = 'var(--space-md)';
+    userInfo.style.background = 'rgba(255, 107, 0, 0.1)';
+    userInfo.style.borderColor = 'rgba(255, 107, 0, 0.3)';
     
-    if (stream.userAvatar) {
-        const avatar = document.createElement('img');
-        avatar.src = stream.userAvatar;
-        avatar.className = 'user-avatar-small';
-        avatar.alt = 'Avatar';
-        avatar.onerror = function() { 
-            this.style.display = 'none'; 
-            this.nextElementSibling.style.display = 'inline'; 
+    const userIcon = document.createElement('i');
+    userIcon.className = 'fas fa-user-circle';
+    userIcon.style.color = 'var(--accent-orange)';
+    
+    const userText = document.createElement('span');
+    userText.textContent = `Subido por: ${sanitizeText(stream.userName || 'Usuario')}`;
+    userText.style.color = 'var(--accent-orange)';
+    
+    userInfo.appendChild(userIcon);
+    userInfo.appendChild(userText);
+    
+    // ========== RATING SECTION PREMIUM ==========
+    const ratingContainer = document.createElement('div');
+    ratingContainer.className = 'info-item';
+    ratingContainer.style.marginTop = 'var(--space-md)';
+    ratingContainer.style.background = 'rgba(255, 255, 255, 0.05)';
+    ratingContainer.style.flexDirection = 'column';
+    ratingContainer.style.alignItems = 'center';
+    ratingContainer.style.gap = 'var(--space-sm)';
+    
+    const ratingTitle = document.createElement('span');
+    ratingTitle.textContent = 'Calificación:';
+    ratingTitle.style.fontSize = 'var(--text-xs)';
+    ratingTitle.style.color = 'var(--text-muted)';
+    
+    const ratingStars = document.createElement('div');
+    ratingStars.className = 'rating-stars';
+    ratingStars.style.display = 'flex';
+    ratingStars.style.gap = '4px';
+    
+    for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('i');
+        star.className = 'fas fa-star';
+        star.style.color = '#ffd700';
+        star.style.cursor = 'pointer';
+        star.style.transition = 'all 0.2s ease';
+        star.onclick = () => rateStream(stream.id, i);
+        star.onmouseover = () => {
+            star.style.transform = 'scale(1.2)';
+            star.style.filter = 'drop-shadow(0 0 5px #ffd700)';
         };
-        userInfo.appendChild(avatar);
-        
-        const avatarIcon = document.createElement('i');
-        avatarIcon.className = 'fas fa-user-circle user-icon-small';
-        avatarIcon.style.display = 'none';
-        userInfo.appendChild(avatarIcon);
-    } else {
-        const avatarIcon = document.createElement('i');
-        avatarIcon.className = 'fas fa-user-circle user-icon-small';
-        userInfo.appendChild(avatarIcon);
+        star.onmouseout = () => {
+            star.style.transform = 'scale(1)';
+            star.style.filter = 'none';
+        };
+        ratingStars.appendChild(star);
     }
     
-    const userName = document.createElement('span');
-    userName.className = 'user-name-small';
-    userName.textContent = `Subido por: ${sanitizeText(stream.userName || 'Usuario')}`;
-    userInfo.appendChild(userName);
+    const ratingCount = document.createElement('span');
+    ratingCount.textContent = '(0.0/5 - 0 votos)';
+    ratingCount.style.fontSize = 'var(--text-xs)';
+    ratingCount.style.color = 'var(--text-muted)';
     
-    // Imagen de portada si existe
-    if (stream.portadaURL) {
-        const portadaImg = document.createElement('div');
-        portadaImg.className = 'stream-portada';
-        portadaImg.style.backgroundImage = `url(${sanitizeURL(stream.portadaURL, 'image')})`;
-        card.insertBefore(portadaImg, header);
-    }
+    ratingContainer.appendChild(ratingTitle);
+    ratingContainer.appendChild(ratingStars);
+    ratingContainer.appendChild(ratingCount);
     
-    // Sección de comentarios (inicialmente oculta)
-    const commentsSection = createCommentsSection(stream);
+    // ========== COMMENTS BUTTON PREMIUM ==========
+    const commentsBtn = document.createElement('button');
+    commentsBtn.className = 'action-btn';
+    commentsBtn.style.marginTop = 'var(--space-lg)';
+    commentsBtn.style.width = '100%';
+    commentsBtn.innerHTML = '<i class="fas fa-comments"></i> VER COMENTARIOS';
+    commentsBtn.onclick = () => toggleComments(stream.id);
     
-    // Ensamblar card
+    // ========== ENSAMBLAR TARJETA PREMIUM ==========
+    body.appendChild(info);
+    body.appendChild(actions);
+    body.appendChild(timerContainer);
+    body.appendChild(userInfo);
+    body.appendChild(ratingContainer);
+    body.appendChild(commentsBtn);
+    
     card.appendChild(header);
-    card.appendChild(userInfo);
-    card.appendChild(info);
-    card.appendChild(actions);
-    card.appendChild(commentsSection);
+    card.appendChild(body);
     
-    // Agregar efecto de brillo según la plataforma
+    // Agregar efectos especiales según plataforma
     card.classList.add(`platform-${stream.plataforma}`);
+    
+    // Configurar timer si existe la función
+    if (typeof updateTimeRemaining === 'function' && stream.createdAt) {
+        setTimeout(() => updateTimeRemaining(stream.id, stream.createdAt), 100);
+    }
     
     return card;
 }
@@ -866,10 +934,10 @@ function getQualityIcon(quality) {
     return icons[quality] || 'fas fa-video';
 }
 
-// Actualizar tiempo restante
+// Actualizar tiempo restante CORREGIDO para nuevas tarjetas premium
 function updateTimeRemaining(streamId, createdAt) {
-    const timer = document.getElementById(`timer-${streamId}`);
-    if (!timer) return;
+    const timerElement = document.getElementById(`timer-${streamId}`);
+    if (!timerElement) return;
     
     const updateTimer = () => {
         const now = new Date();
@@ -878,10 +946,13 @@ function updateTimeRemaining(streamId, createdAt) {
         const remaining = (1 * 60 * 60 * 1000) - elapsed; // 1 hora en ms
         
         if (remaining <= 0) {
-            timer.querySelector('span').textContent = 'Expirado';
-            timer.style.background = '#ff4444';
-            timer.style.borderColor = '#ff4444';
-            timer.style.color = 'white';
+            timerElement.textContent = '⏰ Expirado';
+            const timerContainer = timerElement.closest('.info-item');
+            if (timerContainer) {
+                timerContainer.style.background = 'rgba(255, 68, 68, 0.2)';
+                timerContainer.style.borderColor = 'rgba(255, 68, 68, 0.5)';
+                timerContainer.style.color = '#ff4444';
+            }
             
             // Eliminar transmisión expirada
             deleteExpiredStream(streamId);
@@ -892,7 +963,7 @@ function updateTimeRemaining(streamId, createdAt) {
         const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
         
-        timer.querySelector('span').textContent = `${hours}h ${minutes}m ${seconds}s`;
+        timerElement.textContent = `⏱️ ${hours}h ${minutes}m ${seconds}s restantes`;
     };
     
     updateTimer();
@@ -907,6 +978,217 @@ async function deleteExpiredStream(streamId) {
     } catch (error) {
         console.error('Error al eliminar transmisión expirada:', error);
     }
+}
+
+// ========== FUNCIONES PREMIUM PARA NUEVAS TARJETAS ==========
+
+// Toggle favorito
+function toggleFavorite(streamId) {
+    const favoritesKey = 'ultragol_favorites';
+    const favorites = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+    
+    if (favorites.includes(streamId)) {
+        const index = favorites.indexOf(streamId);
+        favorites.splice(index, 1);
+        showNotification('❤️ Eliminado de favoritos', 'info');
+    } else {
+        favorites.push(streamId);
+        showNotification('💚 Agregado a favoritos', 'success');
+    }
+    
+    localStorage.setItem(favoritesKey, JSON.stringify(favorites));
+    updateFavoriteButtons();
+}
+
+// Actualizar botones de favoritos
+function updateFavoriteButtons() {
+    const favoritesKey = 'ultragol_favorites';
+    const favorites = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+    
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        if (btn.innerHTML.includes('FAVORITO')) {
+            const card = btn.closest('.stream-card');
+            const streamId = card?.querySelector('[id^="timer-"]')?.id?.replace('timer-', '');
+            
+            if (streamId && favorites.includes(streamId)) {
+                btn.innerHTML = '<i class="fas fa-heart" style="color: #ff6b6b;"></i> FAVORITO';
+                btn.style.background = 'rgba(255, 107, 107, 0.2)';
+                btn.style.borderColor = 'rgba(255, 107, 107, 0.5)';
+            } else {
+                btn.innerHTML = '<i class="fas fa-heart"></i> FAVORITO';
+                btn.style.background = 'rgba(0, 0, 0, 0.4)';
+                btn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            }
+        }
+    });
+}
+
+// Compartir stream
+function shareStream(stream) {
+    const shareData = {
+        title: `⚽ ${stream.equipos} - ULTRAGOL`,
+        text: `¡Mira este partido en vivo! ${stream.equipos} en ${stream.plataforma.toUpperCase()}`,
+        url: window.location.href
+    };
+    
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData).catch(err => {
+            console.log('Error sharing:', err);
+            fallbackShare(stream);
+        });
+    } else {
+        fallbackShare(stream);
+    }
+}
+
+// Compartir fallback (copiar al portapapeles)
+function fallbackShare(stream) {
+    const shareText = `⚽ ${stream.equipos} - En vivo en ${stream.plataforma.toUpperCase()}\n🔗 ${window.location.href}`;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareText).then(() => {
+            showNotification('🔗 Enlace copiado al portapapeles', 'success');
+        }).catch(() => {
+            showNotification('❌ Error al copiar enlace', 'error');
+        });
+    } else {
+        // Fallback para navegadores sin clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = shareText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showNotification('🔗 Enlace copiado al portapapeles', 'success');
+        } catch (err) {
+            showNotification('❌ Error al copiar enlace', 'error');
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+// Calificar stream
+function rateStream(streamId, rating) {
+    const ratingsKey = 'ultragol_ratings';
+    const ratings = JSON.parse(localStorage.getItem(ratingsKey) || '{}');
+    
+    ratings[streamId] = rating;
+    localStorage.setItem(ratingsKey, JSON.stringify(ratings));
+    
+    // Actualizar estrellas visualmente
+    const card = document.querySelector(`[id="timer-${streamId}"]`)?.closest('.stream-card');
+    if (card) {
+        const stars = card.querySelectorAll('.rating-stars i');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#ffd700';
+                star.style.filter = 'drop-shadow(0 0 8px #ffd700)';
+            } else {
+                star.style.color = '#666';
+                star.style.filter = 'none';
+            }
+        });
+        
+        // Actualizar contador
+        const ratingCount = card.querySelector('.rating-stars').nextElementSibling.nextElementSibling;
+        if (ratingCount) {
+            ratingCount.textContent = `(${rating}.0/5 - 1 voto)`;
+        }
+    }
+    
+    showNotification(`⭐ Has calificado con ${rating} estrella${rating > 1 ? 's' : ''}`, 'success');
+}
+
+// Toggle comentarios
+function toggleComments(streamId) {
+    const card = document.querySelector(`[id="timer-${streamId}"]`)?.closest('.stream-card');
+    if (!card) return;
+    
+    let commentsSection = card.querySelector('.comments-section');
+    
+    if (!commentsSection) {
+        // Crear sección de comentarios
+        commentsSection = document.createElement('div');
+        commentsSection.className = 'comments-section';
+        commentsSection.style.cssText = `
+            margin-top: var(--space-lg);
+            padding: var(--space-lg);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+        
+        commentsSection.innerHTML = `
+            <h4 style="color: var(--text-primary); margin-bottom: var(--space-md); font-size: var(--text-sm);">
+                <i class="fas fa-comments"></i> Comentarios
+            </h4>
+            <div class="comments-list" style="margin-bottom: var(--space-md); max-height: 200px; overflow-y: auto;">
+                <p style="color: var(--text-muted); text-align: center; padding: var(--space-lg);">
+                    No hay comentarios aún. ¡Sé el primero en comentar!
+                </p>
+            </div>
+            <div class="comment-form" style="display: flex; gap: var(--space-sm);">
+                <input type="text" placeholder="Escribe un comentario..." 
+                       style="flex: 1; padding: var(--space-sm); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--text-primary);">
+                <button onclick="addComment('${streamId}')" 
+                        style="padding: var(--space-sm) var(--space-md); background: var(--gradient-hero); border: none; border-radius: 8px; color: white; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        `;
+        
+        card.appendChild(commentsSection);
+    } else {
+        // Toggle visibilidad
+        commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Agregar comentario
+function addComment(streamId) {
+    const card = document.querySelector(`[id="timer-${streamId}"]`)?.closest('.stream-card');
+    const input = card?.querySelector('.comment-form input');
+    
+    if (!input || !input.value.trim()) return;
+    
+    const commentText = input.value.trim();
+    const commentsList = card.querySelector('.comments-list');
+    
+    // Crear nuevo comentario
+    const comment = document.createElement('div');
+    comment.style.cssText = `
+        padding: var(--space-sm);
+        margin-bottom: var(--space-sm);
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border-left: 3px solid var(--accent-green);
+    `;
+    
+    comment.innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-xs);">
+            <i class="fas fa-user-circle" style="color: var(--accent-orange);"></i>
+            <span style="color: var(--text-primary); font-weight: 600; font-size: var(--text-xs);">
+                ${currentUser?.displayName || 'Usuario'}
+            </span>
+            <span style="color: var(--text-muted); font-size: var(--text-xs);">
+                hace un momento
+            </span>
+        </div>
+        <p style="color: var(--text-secondary); margin: 0;">${commentText}</p>
+    `;
+    
+    // Si es el primer comentario, reemplazar el mensaje vacío
+    if (commentsList.children.length === 1 && commentsList.children[0].textContent.includes('No hay comentarios')) {
+        commentsList.innerHTML = '';
+    }
+    
+    commentsList.appendChild(comment);
+    input.value = '';
+    
+    // Scroll al final
+    commentsList.scrollTop = commentsList.scrollHeight;
+    
+    showNotification('💬 Comentario agregado', 'success');
 }
 
 // Filtrar transmisiones por plataforma
