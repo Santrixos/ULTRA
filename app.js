@@ -982,23 +982,6 @@ async function deleteExpiredStream(streamId) {
 
 // ========== FUNCIONES PREMIUM PARA NUEVAS TARJETAS ==========
 
-// Toggle favorito
-function toggleFavorite(streamId) {
-    const favoritesKey = 'ultragol_favorites';
-    const favorites = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
-    
-    if (favorites.includes(streamId)) {
-        const index = favorites.indexOf(streamId);
-        favorites.splice(index, 1);
-        showNotification('❤️ Eliminado de favoritos', 'info');
-    } else {
-        favorites.push(streamId);
-        showNotification('💚 Agregado a favoritos', 'success');
-    }
-    
-    localStorage.setItem(favoritesKey, JSON.stringify(favorites));
-    updateFavoriteButtons();
-}
 
 // Actualizar botones de favoritos
 function updateFavoriteButtons() {
@@ -2412,16 +2395,16 @@ function shareLiveStream() {
             showToast('Stream compartido exitosamente', 'success');
         }).catch((err) => {
             console.warn('Error al compartir:', err);
-            fallbackShare(streamUrl);
+            fallbackShareUrl(streamUrl);
         });
     } else {
         // Fallback - copiar al portapapeles
-        fallbackShare(streamUrl);
+        fallbackShareUrl(streamUrl);
     }
 }
 
-// Función de respaldo para compartir
-function fallbackShare(url) {
+// Función de respaldo para compartir URLs
+function fallbackShareUrl(url) {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(url).then(() => {
             showToast('Link copiado al portapapeles', 'success');
