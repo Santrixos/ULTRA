@@ -790,91 +790,182 @@ main {
     border-radius: var(--radius-full);
 }
 
-/* ======================== ULTRA-MODERN STREAM CARDS ======================== */
+/* ======================== PREMIUM GAMING-STYLE STREAM CARDS ======================== */
 
 .streams-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: var(--space-xl);
-    animation: fadeInUp var(--duration-slow) var(--ease-out);
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: var(--space-2xl);
+    animation: fadeInGrid 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    perspective: 1000px;
 }
 
-@keyframes fadeInUp {
+@keyframes fadeInGrid {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(40px) rotateX(10deg);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) rotateX(0deg);
     }
 }
 
 .stream-card {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(0, 255, 65, 0.2);
-    border-radius: var(--radius-xl);
+    background: linear-gradient(145deg, #0a0a0a 0%, #1a1a1a 25%, #111111 75%, #0d0d0d 100%);
+    backdrop-filter: blur(25px) saturate(200%);
+    border: 2px solid transparent;
+    border-radius: 20px;
     overflow: hidden;
-    transition: all var(--duration-normal) var(--ease-out);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     cursor: pointer;
     height: fit-content;
-    box-shadow: var(--shadow-card);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 2px 8px rgba(0, 255, 65, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform-style: preserve-3d;
 }
 
+/* Efecto de brillo animado en el borde */
 .stream-card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        transparent, 
+        var(--accent-green), 
+        var(--accent-orange), 
+        transparent, 
+        var(--accent-green)
+    );
+    background-size: 300% 300%;
+    border-radius: 22px;
+    z-index: 0;
+    opacity: 0;
+    animation: shimmerBorder 3s linear infinite;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    padding: 2px;
+}
+
+.stream-card::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: var(--gradient-border);
-    transform: scaleX(0);
-    transition: transform var(--duration-normal) var(--ease-out);
+    bottom: 0;
+    background: linear-gradient(145deg, transparent 0%, rgba(0, 255, 65, 0.03) 50%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
-.stream-card:hover::before {
-    transform: scaleX(1);
+@keyframes shimmerBorder {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .stream-card:hover {
-    transform: translateY(-8px) rotate(0.5deg);
-    box-shadow: var(--shadow-glow-green);
-    border-color: var(--accent-green);
+    transform: translateY(-12px) rotateX(2deg) rotateY(1deg) scale(1.02);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 8px 30px rgba(0, 255, 65, 0.2),
+        0 2px 10px rgba(255, 107, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+.stream-card:hover::before {
+    opacity: 1;
+}
+
+.stream-card:hover::after {
+    opacity: 1;
+}
+
+/* Header con efecto glass morphism premium */
 .stream-card-header {
-    padding: var(--space-lg);
-    background: var(--gradient-card);
+    padding: var(--space-xl);
+    background: linear-gradient(135deg, 
+        rgba(0, 255, 65, 0.15) 0%, 
+        rgba(255, 107, 0, 0.1) 50%, 
+        rgba(0, 255, 65, 0.05) 100%
+    );
     position: relative;
-    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+    border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
 }
 
+.stream-card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.stream-card:hover .stream-card-header::before {
+    left: 100%;
+}
+
+/* Título de equipos con animación espectacular */
 .stream-teams {
     font-family: var(--font-display);
-    font-size: var(--text-lg);
-    font-weight: 700;
+    font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+    font-weight: 800;
     color: var(--text-primary);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    position: relative;
 }
 
 .stream-teams::before {
     content: '⚽';
-    font-size: var(--text-xl);
-    animation: bounce 2s infinite;
+    font-size: 1.8rem;
+    animation: footballSpin 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 65, 0.6));
+    transition: all 0.3s ease;
 }
 
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
+.stream-card:hover .stream-teams::before {
+    animation: footballSpinFast 1s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px rgba(255, 107, 0, 0.8));
 }
 
+@keyframes footballSpin {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(90deg) scale(1.1); }
+    50% { transform: rotate(180deg) scale(1); }
+    75% { transform: rotate(270deg) scale(1.1); }
+}
+
+@keyframes footballSpinFast {
+    0%, 100% { transform: rotate(0deg) scale(1.2); }
+    50% { transform: rotate(180deg) scale(1.3); }
+}
+
+/* Meta badges con animaciones suaves */
 .stream-meta {
     display: flex;
     flex-wrap: wrap;
@@ -883,102 +974,174 @@ main {
 }
 
 .stream-badge {
-    padding: var(--space-xs) var(--space-sm);
-    background: rgba(255, 255, 255, 0.1);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-full);
-    font-size: var(--text-xs);
-    font-weight: 600;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 700;
     color: var(--text-primary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.stream-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.stream-badge:hover::before {
+    left: 100%;
 }
 
 .stream-badge.live {
-    background: var(--live);
+    background: linear-gradient(135deg, var(--accent-green) 0%, #00cc34 100%);
     color: var(--bg-primary);
-    animation: livePulse 2s infinite;
-    font-weight: 700;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    animation: livePulseNew 2s ease-in-out infinite;
+    font-weight: 800;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
 }
 
-@keyframes livePulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.7); }
-    50% { opacity: 0.9; box-shadow: 0 0 0 10px rgba(0, 255, 65, 0); }
+@keyframes livePulseNew {
+    0%, 100% { 
+        opacity: 1; 
+        box-shadow: 0 0 20px rgba(0, 255, 65, 0.4), 0 0 0 0 rgba(0, 255, 65, 0.7); 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.9; 
+        box-shadow: 0 0 30px rgba(0, 255, 65, 0.6), 0 0 0 8px rgba(0, 255, 65, 0); 
+        transform: scale(1.05);
+    }
 }
 
 .platform-badge {
-    background: var(--gradient-orange);
+    background: linear-gradient(135deg, var(--accent-orange) 0%, #ff8533 100%);
     color: var(--text-primary);
     border: 1px solid var(--accent-orange);
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
 }
 
 .quality-badge {
-    background: rgba(0, 255, 65, 0.2);
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.3) 0%, rgba(0, 255, 65, 0.1) 100%);
     color: var(--accent-green);
     border: 1px solid var(--accent-green);
+    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.2);
 }
 
+/* Body de la tarjeta rediseñado */
 .stream-card-body {
-    padding: var(--space-lg);
+    padding: var(--space-xl);
+    background: linear-gradient(180deg, 
+        rgba(0, 0, 0, 0.1) 0%, 
+        rgba(0, 0, 0, 0.3) 100%
+    );
 }
 
 .stream-info {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
 }
 
 .info-item {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     font-size: var(--text-sm);
     color: var(--text-secondary);
+    padding: var(--space-sm);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    background: rgba(0, 255, 65, 0.05);
+    border-color: rgba(0, 255, 65, 0.3);
+    transform: translateX(5px);
 }
 
 .info-item i {
     color: var(--accent-green);
-    width: 16px;
+    width: 20px;
     text-align: center;
+    font-size: 1.1rem;
+    filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.5));
 }
 
+/* Botones de acción premium */
 .stream-actions {
     display: flex;
-    gap: var(--space-sm);
+    gap: var(--space-md);
 }
 
 .action-btn {
     flex: 1;
-    padding: var(--space-sm) var(--space-lg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-md);
-    background: transparent;
+    padding: var(--space-md) var(--space-lg);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.4);
     color: var(--text-secondary);
     font-size: var(--text-sm);
+    font-weight: 600;
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.action-btn:hover::before {
+    left: 100%;
 }
 
 .action-btn.primary {
-    background: var(--gradient-hero);
+    background: linear-gradient(135deg, var(--accent-green) 0%, #00cc34 100%);
     border-color: transparent;
     color: white;
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.3);
 }
 
 .action-btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-3px) scale(1.02);
     color: var(--text-primary);
     border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
 }
 
 .action-btn.primary:hover {
-    box-shadow: var(--shadow-glow-green);
-    background: var(--gradient-orange);
+    box-shadow: 
+        0 10px 30px rgba(0, 255, 65, 0.4),
+        0 4px 15px rgba(255, 107, 0, 0.2);
+    background: linear-gradient(135deg, var(--accent-orange) 0%, #ff8533 100%);
 }
 
 /* ======================== NO STREAMS EMPTY STATE ======================== */
@@ -1432,7 +1595,58 @@ footer .footer-note {
     
     .streams-grid {
         grid-template-columns: 1fr;
-        gap: var(--space-lg);
+        gap: var(--space-xl);
+        perspective: none;
+    }
+    
+    /* Optimizaciones para las nuevas tarjetas premium en móvil */
+    .stream-card {
+        border-radius: 16px;
+        margin-bottom: var(--space-md);
+        backdrop-filter: blur(15px);
+    }
+    
+    .stream-card:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 
+            0 8px 25px rgba(0, 0, 0, 0.2),
+            0 2px 10px rgba(0, 255, 65, 0.1);
+    }
+    
+    /* Reducir efectos pesados en móvil para mejor rendimiento */
+    .stream-card::before {
+        animation-duration: 4s;
+    }
+    
+    .stream-badge.live {
+        animation-duration: 3s;
+    }
+    
+    .stream-card-header {
+        padding: var(--space-lg);
+    }
+    
+    .stream-teams {
+        font-size: 1.1rem;
+        gap: var(--space-sm);
+    }
+    
+    .stream-teams::before {
+        font-size: 1.3rem;
+    }
+    
+    .stream-meta {
+        justify-content: center;
+        gap: var(--space-xs);
+    }
+    
+    .stream-badge {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: 0.7rem;
+    }
+    
+    .stream-card-body {
+        padding: var(--space-lg);
     }
     
     .filters {
@@ -1496,6 +1710,55 @@ footer .footer-note {
         text-align: center;
         gap: var(--space-sm);
     }
+    
+    /* Optimizaciones adicionales para las tarjetas premium en pantallas muy pequeñas */
+    .streams-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .stream-card {
+        border-radius: 12px;
+        margin: 0 var(--space-xs) var(--space-lg) var(--space-xs);
+    }
+    
+    .stream-card:hover {
+        transform: translateY(-2px) scale(1.005);
+    }
+    
+    .stream-card-header,
+    .stream-card-body {
+        padding: var(--space-md);
+    }
+    
+    .stream-teams {
+        font-size: 1rem;
+        text-align: center;
+    }
+    
+    .stream-teams::before {
+        font-size: 1.2rem;
+    }
+    
+    .stream-meta {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .stream-badge {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+    }
+    
+    .stream-info {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+    
+    .action-btn {
+        padding: var(--space-sm);
+        font-size: 0.75rem;
+    }
 }
 
 /* ======================== ACCESSIBILITY & MOTION PREFERENCES ======================== */
@@ -1505,6 +1768,17 @@ footer .footer-note {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+    }
+    
+    /* Deshabilitar animaciones específicas de las tarjetas premium */
+    .stream-card::before,
+    .stream-teams::before,
+    .stream-badge.live {
+        animation: none !important;
+    }
+    
+    .stream-card:hover {
+        transform: translateY(-4px) !important;
     }
 }
 
